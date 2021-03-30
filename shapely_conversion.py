@@ -84,6 +84,6 @@ Convert an image into a list of shapely polygons.
 '''
 def convert(image, approximation = cv2.CHAIN_APPROX_SIMPLE):
    
-    contour_list = generate_border_lines(image)
+    contour_list = generate_border_lines(image, approximation)
     
     return create_contour_families(contour_list)
