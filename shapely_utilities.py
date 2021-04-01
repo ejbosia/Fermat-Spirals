@@ -140,6 +140,19 @@ def self_intersections(ls):
 
     return intersection_points
 
+'''
+Reverse a input linestring ~ this is helpful for projection when the distance is ambiguous (intersections)
+'''
+def reverse(ls):
+    return LineString(ls.coords[::-1])
+
+
+'''
+Merge two linestrings
+'''
+def merge(ls1, ls2):
+    return LineString(ls1.coords + ls2.coords)
+
 
 '''
 Evenly sample the linestring ~ this returns a list of points
@@ -155,4 +168,19 @@ def sample(ls, distance):
         
         pos += distance
         
-    return points 
+    return points
+
+
+'''
+Generate the curvature of each vertex on a linestring. The endpoints are set to ??? ~ this returns a list of curvatures of size equal to the number of vertices
+'''
+def curvature(ls):
+    raise NotImplementedError("Curvature calculations has not been implemented yet")
+
+
+
+'''
+Adaptively sample the linestring based on the curvature of each vertex ~ this returns a new list of points
+'''
+def adaptive_sample(ls, K=1):
+    raise NotImplementedError("Adaptive sampling has not been implemented")
