@@ -34,7 +34,6 @@ def calculate_break(path, start, radius):
     return path.interpolate(dis)
 
 
-
 '''
 Build the outer spiral of the fermat spiral
 '''  
