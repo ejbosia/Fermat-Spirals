@@ -140,6 +140,36 @@ def self_intersections(ls):
 
     return intersection_points
 
+
+'''
+Find any self intersections in the input linestring using binary search like recursion
+'''
+def self_intersections_binary(ls):
+    
+    intersection_points = []
+
+    pivot = int(len(ls.coords)/2)
+
+    ls1_coords = ls.coords[:pivot]
+    ls2_coords = ls.coords[pivot:]
+
+    ls1 = LineString(ls1_coords) if len(ls1_coords) > 1 else LineString()
+    ls2 = LineString(ls2_coords) if len(ls1_coords) > 1 else LineString()
+
+    s0 = ls.is_simple
+    s1 = ls1.is_simple
+    s2 = ls2.is_simple
+
+    # if s0 is complex, but its bisects are simple, run the normal self intersection algorithm on s0
+    if not s0 and s1 and s2:
+        return self_intersections(ls)
+    if not s1:
+       intersection_points.extend(self_intersections_binary(ls1))
+    if not s2:
+       intersection_points.extend(self_intersections_binary(ls2))
+
+    return intersection_points
+
 '''
 Reverse a input linestring ~ this is helpful for projection when the distance is ambiguous (intersections)
 '''

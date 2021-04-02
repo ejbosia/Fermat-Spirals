@@ -4,10 +4,11 @@ Generate a space-filling spiral path on an input polygon
 @author ejbosia
 '''
 
-from shapely_utilities import distance_transform, cut, cycle, self_intersections, reverse
+from shapely_utilities import distance_transform, cut, cycle, self_intersections_binary, reverse
 
 from shapely.geometry import Point, LineString, Polygon
 
+from time import time
 
 '''
 Calculate a point a distance away from a position on the contour in a given direction
@@ -177,11 +178,14 @@ def remove_intersections(path):
 
     # check if the linestring has any self intersections
     if ls.is_simple:
+        print("\t\tsimple")
         return path
 
 
     # find the self intersections
-    intersections = self_intersections(ls)
+    intersections = self_intersections_binary(ls)
+
+    print(len(intersections))
 
     # reverse the linestring to set the center of the path to the 
     rls = reverse(ls)
@@ -228,13 +232,25 @@ Create a cleaned spiral path with no duplicate points or self intersections
 '''
 def execute(contour_family, distance):
 
+
+    start = time()
+
     # generate the spiral path
     path = spiral_path(contour_family, distance)
 
+    print("\tSpiral", time()-start)
+
+    duplicates = time()
     # remove any duplicate points in the path
     path = list(dict.fromkeys(path))
 
+    print("\tDuplicates", time()-duplicates)
+
+    intersections = time()
     # remove any self intersections in the path
     path = remove_intersections(path)
+
+    print("\tRemove Intersections", time()-intersections)
+
 
     return path

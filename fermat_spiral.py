@@ -106,9 +106,8 @@ def inner_spiral(outer_pieces, distance, center, path):
             
             temp = Point(contour.coords[-1])
             d = ls.project(temp)
-            d2 = (d+ls.length)/2 - d
-
             _,ls = cut(ls, d)
+
             end = calculate_point_contour(contour, ls, distance)
             
             contour,_ = cut(contour, contour.project(end))
@@ -129,7 +128,6 @@ def inner_spiral(outer_pieces, distance, center, path):
 
             formatted_pieces.append(contour)
         else:
-            
             # center is outer_piece[0]            
             contour, _ = cut(contour, contour.project(Point(path[-1])))
             formatted_pieces.append(contour)
@@ -140,7 +138,7 @@ def inner_spiral(outer_pieces, distance, center, path):
             path = list(ls.coords)
             
             # self intersections possible ~ need to check somehow.... seems like it works ok-ish???           
-            test_path = LineString(path.coords[:-1])
+            test_path = LineString(path[:-1])
             generated_path = LineString([contour.coords[-1], path[-1]])
             
             if test_path.intersects(generated_path):
@@ -153,6 +151,7 @@ def inner_spiral(outer_pieces, distance, center, path):
                     
                 contour,_ = cut(contour, contour.project(end))
         
+
         for contour in outer_pieces[1:]:
             
             # find the point away from the endpoint of the current piece
