@@ -32,7 +32,7 @@ class GcodeWriter:
     Convert a point into GCODE coordinates ~ assumes p is X,Y,Z in that order with Z optional
     '''
     def convert_point(self, p):
-        return [self.coordinate[i] + str(value) for i,value in enumerate(p)].join(output)
+        return " ".join([self.coordinate[i] + str(value) for i,value in enumerate(p)])
 
 
     '''
