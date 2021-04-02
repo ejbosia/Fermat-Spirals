@@ -168,7 +168,7 @@ def sample(ls, distance):
         
         pos += distance
         
-    return points
+    return LineString(points)
 
 
 '''
