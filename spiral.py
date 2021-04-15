@@ -143,7 +143,7 @@ def spiral_path(contour_family, distance):
     
     # loop through each "inner" contour
     for polygon in contour_family[1:]:
-        
+
         contour = polygon.exterior
         
         # get the next start point
@@ -229,23 +229,23 @@ Create a cleaned spiral path with no duplicate points or self intersections
 def execute(contour_family, distance):
 
 
-    start = time()
+    # start = time()
 
     # generate the spiral path
     path = spiral_path(contour_family, distance)
 
-    print("\tSpiral", time()-start)
+    # print("\tSpiral", time()-start)
 
-    duplicates = time()
+    # duplicates = time()
     # remove any duplicate points in the path
     path = list(dict.fromkeys(path))
 
-    print("\tDuplicates", time()-duplicates)
+    # print("\tDuplicates", time()-duplicates)
 
-    intersections = time()
+    # intersections = time()
     # remove any self intersections in the path
     path = remove_intersections(path)
 
-    print("\tRemove Intersections", time()-intersections)
+    # print("\tRemove Intersections", time()-intersections)
 
     return path

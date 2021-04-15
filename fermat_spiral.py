@@ -4,7 +4,6 @@ Methods for generating fermat spirals from input spirals
 @author ejbosia
 '''
 
-
 import spiral as S
 from spiral import calculate_point, calculate_point_contour
 
@@ -47,17 +46,16 @@ def outer_spiral(path, distance):
     spiral = []
     outer_pieces = []
 
-    while True:
-        # find the "end" point of the contour, which is the point that is projected once around the contour
-        end = calculate_break(path, start, distance)
+    while True:        
 
+        end = calculate_break(path, start, distance)
         # return if the end point is the end of the path
         if end is None or path.project(end) == path.length:   
             return spiral+list(path.coords), outer_pieces, True
         
         # get the reroute point away from the end towards start
         reroute = calculate_point(path, path.project(end), distance, forward=False)
-        
+
         # cut the path at the reroute point
         p1,center = cut(path, path.project(reroute))
 
@@ -109,7 +107,10 @@ def inner_spiral(outer_pieces, distance, center, path):
             _,ls = cut(ls, d)
 
             end = calculate_point_contour(contour, ls, distance)
-            
+
+            if end is None:
+                end = calculate_point(contour, contour.length, distance, False)
+
             contour,_ = cut(contour, contour.project(end))
 
             # self intersections possible ~ need to check somehow.... seems like it works ok-ish???           
