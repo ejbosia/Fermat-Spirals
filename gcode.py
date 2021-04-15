@@ -15,9 +15,10 @@ class GcodeWriter:
     z_floor: used to calculate the up and down positions
     '''
 
-    def __init__(self, filename=None, extruder=False, x_offset=0, y_offset=0, z_offset=0):
+    def __init__(self, filename=None, scale=1, extruder=False, x_offset=0, y_offset=0, z_offset=0):
         self.filename = filename
         self.extruder = extruder
+        self.scale = scale
         self.x_offset = x_offset
         self.y_offset = y_offset
         self.z_offset = z_offset
@@ -29,7 +30,7 @@ class GcodeWriter:
     Convert a point into GCODE coordinates ~ assumes p is X,Y,Z in that order with Z optional
     '''
     def convert_point(self, p):
-        return " ".join([self.coordinate[i] + str(value) for i,value in enumerate(p)])
+        return " ".join([self.coordinate[i] + str(value * self.scale) for i,value in enumerate(p)])
 
 
     '''
