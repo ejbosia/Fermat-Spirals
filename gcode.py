@@ -4,9 +4,6 @@ GcodeWriter
 The GcodeWriter takes in a array-like path of array-like points (2D or 3D) and converts into a gcode path
 '''
 
-from matplotlib import pyplot
-import numpy as np
-
 class GcodeWriter:
 
     '''

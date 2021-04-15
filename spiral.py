@@ -178,14 +178,10 @@ def remove_intersections(path):
 
     # check if the linestring has any self intersections
     if ls.is_simple:
-        print("\t\tsimple")
         return path
-
 
     # find the self intersections
     intersections = self_intersections_binary(ls)
-
-    print(len(intersections))
 
     # reverse the linestring to set the center of the path to the 
     rls = reverse(ls)
@@ -251,6 +247,5 @@ def execute(contour_family, distance):
     path = remove_intersections(path)
 
     print("\tRemove Intersections", time()-intersections)
-
 
     return path
