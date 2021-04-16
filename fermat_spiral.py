@@ -4,8 +4,8 @@ Methods for generating fermat spirals from input spirals
 @author ejbosia
 '''
 
-import spiral as S
-from spiral import calculate_point, calculate_point_contour
+import spiral_path as S
+from spiral_path import calculate_point, calculate_point_contour
 
 from shapely.geometry import Point, LineString
 

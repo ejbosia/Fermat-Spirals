@@ -4,6 +4,8 @@ GcodeWriter
 The GcodeWriter takes in a array-like path of array-like points (2D or 3D) and converts into a gcode path
 '''
 
+from shapely.geometry import Point, LineString
+
 class GcodeWriter:
 
     '''
@@ -55,7 +57,7 @@ class GcodeWriter:
 
     # move the pen down (drawbot specific)
     def command_up(self):
-        return "G01 Z0.5;\n"
+        return "G01 Z2.0;\n"
 
 
     '''
@@ -105,3 +107,100 @@ class GcodeWriter:
         
         # return the string (for debugging, not really needed)
         return output
+
+
+    '''
+    Convert the path into printable code
+    '''
+    def convert_print(self, total_path, layer, height):
+
+        current_layer = layer
+
+        output = self.header()
+
+        while current_layer < height:
+            for path in total_path:
+                
+                # move to p0
+                output += self.command_rapid(path[0])
+                
+                # pen down
+                output += "G01 Z" + str(current_layer) + ";\n"
+                
+                # trace the path
+                for p in path[1:]:
+                    output += self.command_move(p)
+                    
+                # pen up
+                output += "G01 Z" + str(current_layer + 2) + ";\n"
+            
+        # home machine
+        output += "G28 X Y;\n"
+                
+        # write the code to a gcode file
+        if not self.filename is None:
+            f = open(self.filename, "w")
+            f.write(output)
+            f.close()
+        
+        # return the string (for debugging, not really needed)
+        return output
+
+
+
+    '''
+    Convert the path into printable code
+    '''
+    def convert_supervase(self, total_path, layer=0.2, height=10):
+
+        assert len(total_path) == 1
+
+        current_layer = layer / 2
+
+        output = self.header()
+
+        # move to p0
+        output += self.command_rapid(path[0])
+
+        # pen down
+        output += "G01 Z" + str(current_layer) + ";\n"
+
+        # calculate the total length of the path
+        total_dis = LineString(total_path[0]).length
+
+        while current_layer < height:
+
+            p0 = total_path[0]
+            z = current_layer
+
+            output += self.command_move((p0[0],p0[1],z)
+
+            # trace the path
+            for p in total_path[0][1:]:
+
+                # add a fraction of the layer based on the difference of the layer
+                z += Point(p0).distance(Point(p))/total_dis * layer
+
+                output += self.command_move((p[0],p[1],z)
+            
+            current_layer += layer
+
+        # pen up
+        output += "G01 Z" + str(current_layer + 2) + ";\n"
+            
+        # home machine
+        output += "G28 X Y;\n"
+                
+        # write the code to a gcode file
+        if not self.filename is None:
+            f = open(self.filename, "w")
+            f.write(output)
+            f.close()
+        
+        # return the string (for debugging, not really needed)
+        return output
+
+
+
+
+
