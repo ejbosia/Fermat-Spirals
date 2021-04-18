@@ -184,7 +184,7 @@ def inner_spiral(outer_pieces, distance, center, path):
         # add the last piece
         spiral.extend(list(formatted_pieces[-1].coords)[::-1])
     
-    
+    # return path + spiral[::-1]
     return S.remove_intersections(path) + S.remove_intersections(spiral[::-1])[::-1]
 
 
@@ -257,31 +257,49 @@ def combine_paths(root, branches, dis):
 
                 
         start_cut_dis = root_ls.project(start_pt)        
-                
+
+        # if the start is 0 
         if start_cut_dis == 0:
-            _,l2 = cut(root_ls, end_cut_dis)
+            print("start0")
+            # shift the end point away from the start
+            new_end = calculate_point(root_ls, 0, dis, True)
+
+            _,l2 = cut(root_ls, root_ls.project(new_end))
             new_list = [root_ls.coords[0]] + b + list(l2.coords)
+
+        # if the end is at the start
         elif end_cut_dis == 0:
-            _,l2 = cut(root_ls, start_cut_dis)
+            print("end0")
+
+            new_end = calculate_point(root_ls, 0, dis, True)
+
+            _,l2 = cut(root_ls, root_ls.project(new_end))
             new_list = [root_ls.coords[0]] + b[::-1] + list(l2.coords)
         
+        # if the start is at the end
         elif start_cut_dis == root_ls.length:
-            l1,_ = cut(root_ls, end_cut_dis)
-            new_list = list(l1.coords) + b + [root_ls.coords[-1]]
+            print("startl")
 
+            new_end = calculate_point(root_ls, root_ls.length, dis, False)
+
+            l1,_ = cut(root_ls, root_ls.project(new_end))
+            new_list = list(l1.coords) + b[::-1] + [root_ls.coords[-1]]
+
+        # if the end is at the end
         elif end_cut_dis == root_ls.length:
-            l1,_ = cut(root_ls, start_cut_dis)
-            new_list =  list(l1.coords) + b[::-1] + [root_ls.coords[-1]]       
+            print("endl")
 
-        
+            new_end = calculate_point(root_ls, root_ls.length, dis, False)
+
+            l1,_ = cut(root_ls, root_ls.project(new_end))
+            new_list =  list(l1.coords) + b + [root_ls.coords[-1]]       
+
         elif start_cut_dis < end_cut_dis:
-            
             l1,_ = cut(root_ls, start_cut_dis)
             _,l2 = cut(root_ls, end_cut_dis)
             
             new_list = list(l1.coords) + b + list(l2.coords)
         else:
-            
             l1,_ = cut(root_ls, end_cut_dis)
             _,l2 = cut(root_ls, start_cut_dis)
             
