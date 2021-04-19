@@ -260,7 +260,7 @@ def combine_paths(root, branches, dis):
 
         # if the start is 0 
         if start_cut_dis == 0:
-            print("start0")
+
             # shift the end point away from the start
             new_end = calculate_point(root_ls, 0, dis, True)
 
@@ -269,7 +269,6 @@ def combine_paths(root, branches, dis):
 
         # if the end is at the start
         elif end_cut_dis == 0:
-            print("end0")
 
             new_end = calculate_point(root_ls, 0, dis, True)
 
@@ -278,7 +277,6 @@ def combine_paths(root, branches, dis):
         
         # if the start is at the end
         elif start_cut_dis == root_ls.length:
-            print("startl")
 
             new_end = calculate_point(root_ls, root_ls.length, dis, False)
 
@@ -287,7 +285,6 @@ def combine_paths(root, branches, dis):
 
         # if the end is at the end
         elif end_cut_dis == root_ls.length:
-            print("endl")
 
             new_end = calculate_point(root_ls, root_ls.length, dis, False)
 
