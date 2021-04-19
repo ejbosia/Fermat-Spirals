@@ -8,6 +8,7 @@ except ModuleNotFoundError:
     print("INSTALL NUMBA!")
 
 import numpy as np
+from shapely.geometry import LineString, MultiPolygon
 
 class Metrics:
 
@@ -83,12 +84,35 @@ class Metrics:
         return sharpness
 
 
+
+    '''
+    Find "under fill" areas of the polygon ~ returns a percentage from the total
+    '''
+    def measure_fill(self, total_path, polygons, distance):
+
+        # create a multipolygon from polygons
+        fill_polygons = MultiPolygon(polygons)
+        fill_area = fill_polygons.area    
+
+        # get all of the path fills
+        path_areas = [LineString(path).buffer(distance/2) for path in total_path]
+
+        # get the area of the difference ~ these are the remaining areas of the starting polygon that are not filled
+        for path_area in path_areas:
+            fill_polygons = fill_polygons.difference(path_area)
+
+
+        return fill_polygons.area/fill_area
+
     '''
     Return a dictionary of measurements. Unused measurements are returned as np.Nan
     '''
-    def measure(self, total_path, method, distance):
+    def measure(self, total_path, method, distance, polygons=None):
 
         assert type(distance) is float or type(distance) is int
+
+        if self.fill:
+            assert not polygons is None
 
         measurements = {
             "Method": method,
@@ -106,10 +130,9 @@ class Metrics:
         if self.curvature:
             raise NotImplementedError
         if self.fill:
-            raise NotImplementedError
+            measurements["Fill"] = self.measure_fill(total_path, polygons, distance)
 
-
-
+        return measurements
 
 
 
