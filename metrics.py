@@ -2,22 +2,18 @@
 Take in a path and extract different metrics from the path
 '''
 
-try:
-    from numba import jit
-except ModuleNotFoundError:
-    print("INSTALL NUMBA!")
-
 import numpy as np
 from shapely.geometry import LineString, MultiPolygon
 
 class Metrics:
 
-    def __init__(self, segments=True, commands=True, curvature=True, fill=False):
+    def __init__(self, segments=True, commands=True, curvature=True, underfill=False, overfill=False):
 
         self.segments = segments
         self.commands = commands
         self.curvature = curvature
-        self.fill = fill
+        self.underfill = underfill
+        self.overfill = overfill
 
 
     '''
@@ -36,7 +32,6 @@ class Metrics:
     '''
     Get the neighbor indices
     '''
-    @jit(nopython=True)
     def neighbors(self, i1, length):
         
         i0 = i1-1 if i1 != 0 else length-1
@@ -48,7 +43,6 @@ class Metrics:
     '''
     Calculate average angle change of the path
     '''
-    @jit(nopython=True)
     def _path_curvature(self, path):      
         
         sharpness = 0
@@ -86,16 +80,16 @@ class Metrics:
 
 
     '''
-    Find "under fill" areas of the polygon ~ returns a percentage from the total
+    Find "underfill" areas of the polygon ~ returns a percentage from the total
     '''
-    def measure_fill(self, total_path, polygons, distance):
+    def measure_underfill(self, total_path, polygons, distance, epsilon=0.001):
 
         # create a multipolygon from polygons
         fill_polygons = MultiPolygon(polygons)
         fill_area = fill_polygons.area    
 
         # get all of the path fills
-        path_areas = [LineString(path).buffer(distance/2) for path in total_path]
+        path_areas = [LineString(path).buffer(distance/2+epsilon) for path in total_path]
 
         # get the area of the difference ~ these are the remaining areas of the starting polygon that are not filled
         for path_area in path_areas:
@@ -120,7 +114,8 @@ class Metrics:
             "Segments": np.nan,
             "Commands": np.nan,
             "Curvature": np.nan,
-            "Fill": np.nan,
+            "Underfill": np.nan,
+            "Overfill": np.nan,
         }
 
         if self.segments:
@@ -129,10 +124,8 @@ class Metrics:
             measurements["Commands"] = self.measure_commands(total_path)
         if self.curvature:
             raise NotImplementedError
-        if self.fill:
-            measurements["Fill"] = self.measure_fill(total_path, polygons, distance)
-
+        if self.underfill:
+            measurements["Underfill"] = self.measure_underfill(total_path, polygons, distance)
+        if self.overfill:
+            raise NotImplementedError
         return measurements
-
-
-
