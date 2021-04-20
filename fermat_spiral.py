@@ -235,14 +235,22 @@ def combine_paths(root, branches, dis):
             start_pt = possible_line.interpolate(possible_line.project(Point(start)))
         else:
             for item in possible_line:
+
                 if item.type == "LineString":
                     # need to use this check instead of intersects because intersects will return false for some reason
                     test = item.interpolate(item.project(point))
-                    if test == point:
+
+                    if test.almost_equals(point):
                         start_pt = item.interpolate(item.project(Point(start)))
                         break
 
-                
+        # '''
+        # If no valid start point is found...
+        # '''
+        # if start_pt is None:
+        #     continue
+
+
         start_cut_dis = root_ls.project(start_pt)        
 
         # if the start is 0 
@@ -321,7 +329,7 @@ def generate_total_path(isocontours, distance):
         i+=1
         ratio = (LineString(root).length / LineString(s_path).length)
         print(i, ratio)
-        done = ratio > 0.9
+        done = ratio > 0.95
 
 
 
@@ -353,10 +361,12 @@ def generate_total_path_connected(isocontours, distance):
     while not done:
         s_path = S.generate_path(contour_family, distance,start_index=i)     
         root = convert_fermat(s_path,distance)
+        if not s_path:
+            break
         i+=1
         ratio = (LineString(root).length / LineString(s_path).length)
         print(i, ratio)
-        done = ratio > 0.9
+        done = ratio > 0.95
     
     # combine the root and the branches if the root exists
     if root:
