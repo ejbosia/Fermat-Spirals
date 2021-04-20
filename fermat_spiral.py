@@ -9,7 +9,7 @@ from spiral import calculate_point, calculate_point_contour
 
 from shapely.geometry import Point, LineString
 
-from shapely_utilities import cut
+from shapely_utilities import cut, distance_transform
 
 
 '''
@@ -21,6 +21,8 @@ def calculate_break(path, start, radius):
 
     dis = 0
     
+    ### TODO THIS FAILS WITH MULTIPLE LOCAL MINIMA
+
     while dis <= radius:
         _,path = cut(path,radius)
         
@@ -202,21 +204,6 @@ def convert_fermat(path,distance, debug=False):
 
 
 '''
-Create a fermat path from input contours
-'''
-def fermat_path(contours, distance,debug=False):
-    
-    path = S.execute(contours, distance)
-    
-    if path:
-        fermat = convert_fermat(path, distance,debug)
-    else:
-        fermat = path
-    
-    return fermat
-
-
-'''
 Connect root and branch fermat spirals
 '''
 def combine_paths(root, branches, dis):
@@ -305,3 +292,103 @@ def combine_paths(root, branches, dis):
         root_ls = LineString(new_list)
         
     return list(root_ls.coords)
+
+
+
+'''
+Generate unconnected fermat path
+'''
+def generate_total_path(isocontours, distance):
+    
+    total_path = []
+    contour_family = []
+    
+    # loop through each value in the result
+    for branch in isocontours:
+        if type(branch) is list:  
+            total_path.extend(generate_total_path(branch, distance))
+        else:
+            contour_family.append(branch)
+
+    s_path = S.generate_path(contour_family, distance)
+    results = convert_fermat(s_path,distance)
+
+    total_path.append(results)
+
+    return total_path
+
+'''
+Generate connected fermat path
+'''
+def generate_total_path_connected(isocontours, distance):
+    
+    branches = []
+
+    contour_family = []
+
+    # loop through each node or branch in the tree
+    for node in isocontours:
+        
+        # if the result node is a branch, recursively call this function on it
+        if type(node) is list:
+            branches.append(generate_total_path_connected(node, distance))
+        # if the result node is not a branch, add it to the contour family
+        else:
+            contour_family.append(node)
+    
+    s_path = S.generate_path(contour_family, distance)     
+    root = convert_fermat(s_path,distance)
+    
+    # combine the root and the branches if the root exists
+    if root:
+        return combine_paths(root, branches, distance)
+    else:
+        return branches
+
+
+
+def clean_connected(path):
+    
+    total_path = []
+    rest = []
+    
+    for p in path:
+
+        if not p:
+            continue
+
+        if type(p) == list:
+            if type(p[0]) == tuple:
+                total_path.append(p)
+            else:
+                total_path.extend(clean_connected(p))
+        else:
+            rest.append(p)
+                
+    total_path.append(rest)
+    return total_path
+                
+
+
+def execute(polygons, distance, connected=False):
+    
+
+    total_path = []
+
+    for polygon in polygons:
+        isocontours = distance_transform(polygon, -distance) 
+
+
+        if connected:
+            if isocontours:
+                total_path.extend(generate_total_path_connected(isocontours, distance))
+        else:
+            if isocontours:
+                total_path.extend(generate_total_path(isocontours, distance))
+
+
+    # need to clean output of connected path
+    if connected:
+        total_path = clean_connected(total_path)
+
+    return total_path
