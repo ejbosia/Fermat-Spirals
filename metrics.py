@@ -105,7 +105,7 @@ class Metrics:
 
         assert type(distance) is float or type(distance) is int
 
-        if self.fill:
+        if self.underfill:
             assert not polygons is None
 
         measurements = {

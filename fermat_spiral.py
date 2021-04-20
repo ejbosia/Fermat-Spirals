@@ -244,13 +244,6 @@ def combine_paths(root, branches, dis):
                         start_pt = item.interpolate(item.project(Point(start)))
                         break
 
-        # '''
-        # If no valid start point is found...
-        # '''
-        # if start_pt is None:
-        #     continue
-
-
         start_cut_dis = root_ls.project(start_pt)        
 
         # if the start is 0 
@@ -405,7 +398,7 @@ def execute(polygons, distance, connected=False):
     total_path = []
 
     for polygon in polygons:
-        isocontours = distance_transform(polygon, -distance) 
+        isocontours = [polygon] + distance_transform(polygon, -distance) 
 
 
         if connected:
