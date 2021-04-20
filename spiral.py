@@ -10,7 +10,7 @@ from shapely.geometry import Point, LineString, Polygon
 
 from time import time
 
-
+import numpy as np
 
 '''
 Calculate a point a distance away from a position on the contour in a given direction
@@ -303,6 +303,8 @@ def execute(polygons, distance):
         isocontours = distance_transform(polygon, -distance) 
 
         if isocontours:
-            total_path.extend(generate_total_path(isocontours, distance))
+            path = generate_total_path(isocontours, distance)
+
+            total_path.extend(path)
 
     return total_path

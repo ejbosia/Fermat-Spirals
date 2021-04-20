@@ -21,8 +21,6 @@ def calculate_break(path, start, radius):
 
     dis = 0
     
-    ### TODO THIS FAILS WITH MULTIPLE LOCAL MINIMA
-
     while dis <= radius:
         _,path = cut(path,radius)
         
@@ -199,8 +197,10 @@ def convert_fermat(path,distance, debug=False):
         return []
     
     path, pieces, center = outer_spiral(path, distance)
+
+    result = inner_spiral(pieces, distance, center, path)
     
-    return inner_spiral(pieces, distance, center, path)
+    return result
 
 
 '''
@@ -310,10 +310,22 @@ def generate_total_path(isocontours, distance):
         else:
             contour_family.append(branch)
 
-    s_path = S.generate_path(contour_family, distance)
-    results = convert_fermat(s_path,distance)
+    i=0
+    done = False
+    while not done:
+        s_path = S.generate_path(contour_family, distance,start_index=i) 
+        root = convert_fermat(s_path,distance)
 
-    total_path.append(results)
+        if not s_path:
+            break
+        i+=1
+        ratio = (LineString(root).length / LineString(s_path).length)
+        print(i, ratio)
+        done = ratio > 0.9
+
+
+
+    total_path.append(root)
 
     return total_path
 
@@ -336,8 +348,15 @@ def generate_total_path_connected(isocontours, distance):
         else:
             contour_family.append(node)
     
-    s_path = S.generate_path(contour_family, distance)     
-    root = convert_fermat(s_path,distance)
+    i=0
+    done = False
+    while not done:
+        s_path = S.generate_path(contour_family, distance,start_index=i)     
+        root = convert_fermat(s_path,distance)
+        i+=1
+        ratio = (LineString(root).length / LineString(s_path).length)
+        print(i, ratio)
+        done = ratio > 0.9
     
     # combine the root and the branches if the root exists
     if root:
