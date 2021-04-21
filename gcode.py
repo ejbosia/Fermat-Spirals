@@ -151,37 +151,42 @@ class GcodeWriter:
     '''
     Convert the path into printable code
     '''
-    def convert_supervase(self, total_path, layer=0.2, height=10):
+    def convert_supervase(self, path, layer=0.2, height=10):
 
-        assert len(total_path) == 1
+        # super vase only works for length 1 paths
+        assert len(path) == 1
 
         current_layer = layer / 2
 
         output = self.header()
 
         # move to p0
-        output += self.command_rapid(path[0])
+        output += self.command_rapid(path[0][0])
 
         # pen down
         output += "G01 Z" + str(current_layer) + ";\n"
 
         # calculate the total length of the path
-        total_dis = LineString(total_path[0]).length
+        total_dis = LineString(path[0]).length
+
+        debug_list = []
 
         while current_layer < height:
 
-            p0 = total_path[0]
+            p0 = path[0][0]
             z = current_layer
 
-            output += self.command_move((p0[0],p0[1],z)
+            output += self.command_move((p0[0],p0[1],z))
+            debug_list.append((p0[0],p0[1],z))
 
             # trace the path
-            for p in total_path[0][1:]:
+            for p in path[0][1:]:
 
                 # add a fraction of the layer based on the difference of the layer
                 z += Point(p0).distance(Point(p))/total_dis * layer
 
-                output += self.command_move((p[0],p[1],z)
+                output += self.command_move((p[0],p[1],z))
+                debug_list.append((p[0],p[1],z))
             
             current_layer += layer
 
@@ -198,7 +203,7 @@ class GcodeWriter:
             f.close()
         
         # return the string (for debugging, not really needed)
-        return output
+        return debug_list
 
 
 
