@@ -392,8 +392,9 @@ def clean_connected(path):
                 
 
 
-def execute(polygons, distance, connected=False):
+def execute(polygons, distance, connected=False, boundaries=0):
     
+    assert not boundaries < 0
 
     total_path = []
 
@@ -403,7 +404,14 @@ def execute(polygons, distance, connected=False):
 
         if connected:
             if isocontours:
-                total_path.extend(generate_total_path_connected(isocontours, distance))
+
+                for isocontour in isocontours[0:boundaries]:
+                    total_path.append(list(isocontour.exterior.coords))
+
+                    for interior in isocontour.interiors:
+                        total_path.append(list(interior.coords))
+
+                total_path.extend(generate_total_path_connected(isocontours[boundaries:], distance))
         else:
             if isocontours:
                 total_path.extend(generate_total_path(isocontours, distance))

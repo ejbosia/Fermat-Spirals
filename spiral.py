@@ -295,15 +295,22 @@ def generate_total_path(isocontours, distance):
 '''
 Generate the spiral fill
 '''
-def execute(polygons, distance):
+def execute(polygons, distance, boundaries=0):
 
     total_path = []
 
     for polygon in polygons:
-        isocontours = distance_transform(polygon, -distance) 
+        isocontours = [polygon] + distance_transform(polygon, -distance) 
 
         if isocontours:
-            path = generate_total_path(isocontours, distance)
+
+            for isocontour in isocontours[0:boundaries]:
+                total_path.append(list(isocontour.exterior.coords))
+
+                for interior in isocontour.interiors:
+                    total_path.append(list(interior.coords))
+
+            path = generate_total_path(isocontours[boundaries:], distance)
 
             total_path.extend(path)
 
