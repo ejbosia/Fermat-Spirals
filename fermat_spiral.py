@@ -323,6 +323,9 @@ def generate_total_path(isocontours, distance):
         ratio = (LineString(root).length / LineString(s_path).length)
         done = ratio > 0.95
 
+        if not done:
+            print(i, " - FS")
+
     total_path.append(root)
 
     return total_path
@@ -407,7 +410,7 @@ def execute(polygons, distance, connected=False, boundaries=0):
                     for interior in isocontour.interiors:
                         total_path.append(list(interior.coords))
 
-                total_path.extend(generate_total_path_connected(isocontours[boundaries:], distance))
+                total_path.append(generate_total_path_connected(isocontours[boundaries:], distance))
         else:
             if isocontours:
                 total_path.extend(generate_total_path(isocontours, distance))

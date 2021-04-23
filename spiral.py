@@ -12,6 +12,8 @@ from time import time
 
 import numpy as np
 
+from matplotlib import pyplot
+
 '''
 Calculate a point a distance away from a position on the contour in a given direction
 this is where the contour is rerouted to the next spiral
@@ -256,17 +258,37 @@ def remove_intersections(path):
 '''
 Create a cleaned spiral path with no duplicate points or self intersections
 '''
-def generate_path(contour_family, distance, start_index = 0):
+def generate_path(contour_family, distance, start_index=0):
 
-    # generate the spiral path
-    path = spiral_path(contour_family, distance, start_index)
+    # run the path algorithm until the path exterior is correct
+    i = start_index
+    done = False
 
-    # remove any duplicate points in the path
-    path = list(dict.fromkeys(path))
+    outer_ring = contour_family[0].exterior
 
-    # remove any self intersections in the path
-    path = remove_intersections(path)
+    while not done:
 
+        # generate the spiral path
+        path = spiral_path(contour_family, distance, i)
+
+        if path:
+
+             # remove any duplicate points in the path
+            path = list(dict.fromkeys(path))
+
+            # remove any self intersections in the path
+            path = remove_intersections(path)
+
+            done = (outer_ring.intersection(LineString(path)).length + distance)/ outer_ring.length > 0.5
+            i += 1
+
+            if not done:
+                print(i)
+
+        else:
+            done = True
+
+       
     return path
 
 
@@ -284,9 +306,9 @@ def generate_total_path(isocontours, distance):
         else:
             contour_family.append(branch)
 
-    results = generate_path(contour_family, distance)
-
-    total_path.append(results)
+        path = generate_path(contour_family, distance)
+    
+    total_path.append(path)
 
     return total_path
 
@@ -311,7 +333,6 @@ def execute(polygons, distance, boundaries=0):
                     total_path.append(list(interior.coords))
 
 
-            total_length = np.sum([c.length for c in isocontours[boundaries:]])
             path = generate_total_path(isocontours[boundaries:], distance)
 
             total_path.extend(path)
