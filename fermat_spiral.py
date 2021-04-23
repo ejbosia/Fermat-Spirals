@@ -372,10 +372,11 @@ def generate_total_path_connected(isocontours, distance):
     i=0
     done = False
     while not done:
-        s_path = S.generate_path(contour_family, distance,start_index=i)     
+        s_path = S.generate_path(contour_family, distance,start_index=i)    
+
+
         root = convert_fermat(s_path,distance)
-        if not s_path:
-            break
+
         i+=1
         ratio = (LineString(root).length / LineString(s_path).length)
         done = ratio > 0.97 and LineString(root).is_simple
@@ -418,25 +419,24 @@ def execute(polygons, distance, connected=False, boundaries=0):
     
     assert not boundaries < 0
 
+
     total_path = []
 
     for polygon in polygons:
         isocontours = [polygon] + distance_transform(polygon, -distance) 
 
+        for isocontour in isocontours[0:boundaries]:
+            total_path.append(list(isocontour.exterior.coords))
+
+            for interior in isocontour.interiors:
+                total_path.append(list(interior.coords))
 
         if connected:
             if isocontours:
-
-                for isocontour in isocontours[0:boundaries]:
-                    total_path.append(list(isocontour.exterior.coords))
-
-                    for interior in isocontour.interiors:
-                        total_path.append(list(interior.coords))
-
                 total_path.append(generate_total_path_connected(isocontours[boundaries:], distance))
         else:
             if isocontours:
-                total_path.extend(generate_total_path(isocontours, distance))
+                total_path.extend(generate_total_path(isocontours[boundaries:], distance))
 
 
     # need to clean output of connected path
