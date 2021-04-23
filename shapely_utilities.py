@@ -199,6 +199,8 @@ def self_intersections_binary(ls):
 
     return intersection_points
 
+
+
 '''
 Reverse a input linestring ~ this is helpful for projection when the distance is ambiguous (intersections)
 '''
@@ -228,6 +230,20 @@ def sample(ls, distance):
         pos += distance
         
     return LineString(points)
+
+
+'''
+Create a virtual boundary around a polygon ~ returns the exterior and a list of interiors
+'''
+def virtual_boundary(polygon, distance):
+
+    virtual_polygon = polygon.buffer(distance)
+
+    exterior = list(virtual_polygon.exterior.coords)
+
+    interiors =  [list(interior.coords) for interior in virtual_polygon.interiors]
+
+    return exterior, interiors
 
 
 '''
