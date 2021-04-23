@@ -55,6 +55,44 @@ def calculate_point(contour, position, radius, forward = True):
         
     return point
 
+
+def calculate_endpoint(contour, radius, forward = False):
+    
+    # set the direction of the error
+    direction = 1 if forward else -1
+    start = Point(contour.coords[-1])
+    
+    index = -1
+
+    # find the first distance past the position (all previous will be before the position)
+    for i, p in enumerate(contour.coords[::-1]):
+        
+        dis = start.distance(Point(p))
+
+        if dis > radius:
+            index = i
+            break
+    
+    if index == -1:
+        return None
+
+    # set the index correctly to match reverse
+    i1 = index * direction
+    i0 = (index-1) * direction
+    
+    if not forward:
+        i1 -= 1
+        i0 -= 1
+
+    # we know the intersection must be on this line, and there can only be one
+    distance_ring = start.buffer(radius).exterior
+    line = LineString([contour.coords[i0], contour.coords[i1]])
+
+    # the return of this must be a point
+    point = distance_ring.intersection(line)
+        
+    return point
+
 '''
 Calculate a point a distance away from a position on the contour in a given direction
 this is where the contour is rerouted to the next spiral
@@ -155,7 +193,7 @@ def spiral_path(contour_family, distance, start_index=0):
     contour = LineString(list(contour.coords)[start_index:] + list(contour.coords)[:start_index])
 
     # calculate the end point a distance away from the end of the contour
-    end = calculate_point(contour, contour.length, distance, forward=False)
+    end = calculate_endpoint(contour, distance)
     
     # if the end point was not found, return an empty list ~ contour is too small
     if end is None:
