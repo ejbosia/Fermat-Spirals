@@ -9,7 +9,7 @@ from spiral import calculate_point, calculate_point_contour
 
 from shapely.geometry import Point, LineString
 
-from shapely_utilities import cut, distance_transform
+from shapely_utilities import cut, distance_transform_diff
 
 
 '''
@@ -432,14 +432,7 @@ def execute(polygons, distance, connected=False, boundaries=0):
     total_path = []
 
     for polygon in polygons:
-        isocontours = [polygon] + distance_transform(polygon, -distance) 
-
-        for isocontour in isocontours[0:boundaries]:
-
-            total_path.append(list(isocontour.exterior.coords))
-
-            for interior in isocontour.interiors:
-                total_path.append(list(interior.coords))
+        isocontours = [polygon.exterior] + distance_transform_diff(polygon, distance)
 
         if connected:
             if isocontours:

@@ -4,7 +4,7 @@ Generate a space-filling spiral path on an input polygon
 @author ejbosia
 '''
 
-from shapely_utilities import distance_transform, cut, cycle, self_intersections_binary, reverse
+from shapely_utilities import distance_transform_diff, cut, cycle, self_intersections_binary, reverse
 
 from shapely.geometry import Point, LineString, Polygon
 
@@ -196,7 +196,7 @@ def spiral_path(contour_family, distance, start_index=0):
         return points
     
     # set the start contour
-    contour = contour_family[0].exterior
+    contour = contour_family[0]
     
     # set the starting point as start_index (arbitrary)
     # contour = LineString(list(contour.coords)[start_index:] + list(contour.coords)[:start_index])
@@ -217,10 +217,8 @@ def spiral_path(contour_family, distance, start_index=0):
     previous = contour
     
     # loop through each "inner" contour
-    for polygon in contour_family[1:]:
+    for contour in contour_family[1:]:
 
-        contour = polygon.exterior
-        
         # get the next start point
         start = contour.interpolate(contour.project(end))
                 
@@ -312,7 +310,7 @@ def generate_path(contour_family, distance, start_index=0):
     i = start_index
     done = False
 
-    outer_ring = contour_family[0].exterior
+    outer_ring = contour_family[0]
 
     while not done:
 
@@ -369,16 +367,9 @@ def execute(polygons, distance, boundaries=0):
     total_path = []
 
     for polygon in polygons:
-        isocontours = [polygon] + distance_transform(polygon, -distance) 
+        isocontours = [polygon.exterior] + distance_transform_diff(polygon, distance) 
 
         if isocontours:
-
-            for isocontour in isocontours[0:boundaries]:
-                total_path.append(list(isocontour.exterior.coords))
-
-                for interior in isocontour.interiors:
-                    total_path.append(list(interior.coords))
-
 
             path = generate_total_path(isocontours[boundaries:], distance)
 
