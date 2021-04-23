@@ -40,6 +40,35 @@ def distance_transform(polygon, distance):
     return result
 
 '''
+Distance transform without changing holes
+'''
+def distance_transform_diff(polygon, distance):
+
+ 
+    if polygon.is_empty:
+        return []
+
+    temp = polygon.exterior.buffer(distance, cap_style = CAP_STYLE.flat, join_style = JOIN_STYLE.mitre)
+    
+    polygon = polygon.difference(temp)
+
+    if polygon.is_empty:
+        return []
+
+    result = []
+
+    # MultiPolygons are the result of concave shapes ~ distance transform creates multiple polygons
+    if polygon.type == "MultiPolygon":
+        for p in polygon:
+            result.append([p.exterior])
+            result[-1].extend(distance_transform_diff(p, distance))
+    else:
+        result.append(polygon.exterior)
+        result.extend(distance_transform_diff(polygon, distance))
+    
+    return result
+
+'''
 Plot all of the contours of an input polygon
 '''
 def plot_poly(polygon):
