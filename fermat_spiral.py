@@ -53,10 +53,18 @@ def outer_spiral(path, distance):
         if end is None or path.project(end) == path.length:   
             return spiral+list(path.coords), outer_pieces, True
         
+
         # get the reroute point away from the end towards start
         reroute = calculate_point(path, path.project(end), distance, forward=False)
 
-        # cut the path at the reroute point
+
+        # if there is no reroute point, we will return the spiral from start to calculated end ~ too small to make fermat
+        if reroute is None:
+            ls,_ = cut(LineString(path), LineString(path).project(end))
+
+            return spiral+list(ls.coords), [], True
+
+
         p1,center = cut(path, path.project(reroute))
 
         # complete the reroute of the path at the end point
@@ -87,7 +95,6 @@ Build the inner spiral of the fermat spiral using the pieces of the spiral
 '''
 def inner_spiral(outer_pieces, distance, center, path):    
     spiral = []
-    
     if not outer_pieces:
         pass
     else:
@@ -108,27 +115,40 @@ def inner_spiral(outer_pieces, distance, center, path):
 
             end = calculate_point_contour(contour, ls, distance)
 
-            if end is None:
-                end = calculate_point(contour, contour.length, distance, False)
+            if not end is None:
 
-            contour,_ = cut(contour, contour.project(end))
-
-            # self intersections possible ~ need to check somehow.... seems like it works ok-ish???           
-            test_path = LineString(contour.coords[:-1])
-            generated_path = LineString([contour.coords[-1], path[-1]])
-                        
-            if test_path.intersects(generated_path):
-                int_point = test_path.intersection(generated_path)
-                
-                if int_point.type == "MultiPoint":
-                    end = sorted(list(int_point), key=end.distance)[-1]
-                else:
-                    end = int_point
-                    
                 contour,_ = cut(contour, contour.project(end))
 
-            formatted_pieces.append(contour)
-        else:
+                # self intersections possible ~ need to check somehow.... seems like it works ok-ish???           
+                test_path = LineString(contour.coords[:-1])
+                generated_path = LineString([contour.coords[-1], path[-1]])
+                            
+                if test_path.intersects(generated_path):
+                    int_point = test_path.intersection(generated_path)
+                    
+                    if int_point.type == "MultiPoint":
+                        end = sorted(list(int_point), key=end.distance)[-1]
+                    else:
+                        end = int_point
+                        
+                    contour,_ = cut(contour, contour.project(end))
+
+                formatted_pieces.append(contour)
+            else:
+                if len(outer_pieces) == 1:
+                    print("RETURN")
+                    return S.remove_intersections(path)
+
+                # remove the first outer piece
+                outer_pieces = outer_pieces[1:]
+
+                print("NONE")
+                # end = calculate_point(contour, contour.length, distance, False)
+                center = False
+
+
+
+        if not center:
             # center is outer_piece[0]            
             contour, _ = cut(contour, contour.project(Point(path[-1])))
             formatted_pieces.append(contour)
@@ -321,10 +341,10 @@ def generate_total_path(isocontours, distance):
             break
         i+=1
         ratio = (LineString(root).length / LineString(s_path).length)
-        done = ratio > 0.95
+        done = ratio > 0.97 and LineString(root).is_simple
 
         if not done:
-            print(i, " - FS")
+            print(i, " - FS", ratio)
 
     total_path.append(root)
 
@@ -358,7 +378,10 @@ def generate_total_path_connected(isocontours, distance):
             break
         i+=1
         ratio = (LineString(root).length / LineString(s_path).length)
-        done = ratio > 0.95
+        done = ratio > 0.97 and LineString(root).is_simple
+
+        if not done:
+            print(i, " - FS", ratio)
     
     # combine the root and the branches if the root exists
     if root:

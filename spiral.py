@@ -55,17 +55,23 @@ def calculate_point(contour, position, radius, forward = True):
         
     return point
 
-
+'''
+Find the endpoint guarenteed ~ avoids finding the wrong point in calculate point
+'''
 def calculate_endpoint(contour, radius, forward = False):
     
     # set the direction of the error
     direction = 1 if forward else -1
-    start = Point(contour.coords[-1])
     
     index = -1
 
+    # reverse the contour coords to loop backwards through them
+    points = contour.coords[::-1]
+
+    start = Point(points[0])
+
     # find the first distance past the position (all previous will be before the position)
-    for i, p in enumerate(contour.coords[::-1]):
+    for i, p in enumerate(points):
         
         dis = start.distance(Point(p))
 
@@ -73,20 +79,18 @@ def calculate_endpoint(contour, radius, forward = False):
             index = i
             break
     
+    # if no point was valid, then we return "None"
     if index == -1:
         return None
 
     # set the index correctly to match reverse
-    i1 = index * direction
-    i0 = (index-1) * direction
-    
-    if not forward:
-        i1 -= 1
-        i0 -= 1
+    i1 = index
+    i0 = (index-1)
+
 
     # we know the intersection must be on this line, and there can only be one
     distance_ring = start.buffer(radius).exterior
-    line = LineString([contour.coords[i0], contour.coords[i1]])
+    line = LineString(points[i0:i1+1])
 
     # the return of this must be a point
     point = distance_ring.intersection(line)
@@ -151,29 +155,34 @@ def calculate_point_contour(contour, previous, radius):
         
     return point
 
+'''
+Pick a good start point for spiral generation
+This should be a point that...
+ - has a large angle difference
+ - has a long flat line
 
+'''
 
-def generate_start_point(contour):
+def generate_start_point(contour, index):
 
     # find the longest line segment in contour
+    distances = []
 
-    p0 = contour.coords[-1]
+    points = [Point(p) for p in contour.coords]
 
-    max_dis = 0
-    position = 0
+    p0 = points[-1]
 
-    for p1 in contour.coords:
-
-        dis = Point(p0).distance(Point(p1))
-        if dis > max_dis:
-            max_dis = dis
-
-            # set the position to bisect this line
-            position = contour.project(Point(p0)) + dis/2
+    for p1 in points:
+        distances.append(p1.distance(p0))
         p0 = p1
 
+    # sort the distances
+    di = np.argsort(distances)
+
+    p0 = points[di[index]-1]
+
     # cycle the contour and return
-    return cycle(contour, contour.interpolate(position))
+    return cycle(contour, p0)
 
 
 '''
@@ -190,11 +199,12 @@ def spiral_path(contour_family, distance, start_index=0):
     contour = contour_family[0].exterior
     
     # set the starting point as start_index (arbitrary)
-    contour = LineString(list(contour.coords)[start_index:] + list(contour.coords)[:start_index])
+    # contour = LineString(list(contour.coords)[start_index:] + list(contour.coords)[:start_index])
+    contour = generate_start_point(contour, start_index)
 
     # calculate the end point a distance away from the end of the contour
     end = calculate_endpoint(contour, distance)
-    
+
     # if the end point was not found, return an empty list ~ contour is too small
     if end is None:
         return []
@@ -314,14 +324,13 @@ def generate_path(contour_family, distance, start_index=0):
              # remove any duplicate points in the path
             path = list(dict.fromkeys(path))
 
+            start_length = LineString(path)
+
             # remove any self intersections in the path
-            path = remove_intersections(path)
+            # path = remove_intersections(path)
 
-            done = (outer_ring.intersection(LineString(path)).length + distance)/ outer_ring.length > 0.5
+            done = LineString(path).is_simple
             i += 1
-
-            if not done:
-                print(i)
 
         else:
             done = True
