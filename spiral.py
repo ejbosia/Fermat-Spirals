@@ -310,6 +310,8 @@ def execute(polygons, distance, boundaries=0):
                 for interior in isocontour.interiors:
                     total_path.append(list(interior.coords))
 
+
+            total_length = np.sum([c.length for c in isocontours[boundaries:]])
             path = generate_total_path(isocontours[boundaries:], distance)
 
             total_path.extend(path)

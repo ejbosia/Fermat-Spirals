@@ -321,10 +321,7 @@ def generate_total_path(isocontours, distance):
             break
         i+=1
         ratio = (LineString(root).length / LineString(s_path).length)
-        print(i, ratio)
         done = ratio > 0.95
-
-
 
     total_path.append(root)
 
@@ -358,7 +355,6 @@ def generate_total_path_connected(isocontours, distance):
             break
         i+=1
         ratio = (LineString(root).length / LineString(s_path).length)
-        print(i, ratio)
         done = ratio > 0.95
     
     # combine the root and the branches if the root exists
