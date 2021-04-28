@@ -29,12 +29,13 @@ Optional Arguments:
 
 An example command that opens "picture.png" from the local directory, runs fermat spiral generation at distance = 2, uses optimization, displays a plot of the path, and outputs a gcode file to "temp.gcode" in the local directory.
 
-'''bash
+'''sh
 python3 main.py "picture.png" 2 -fs -o -p -g "temp.gcode"
 '''
 
 ## Example Results:
 Here is a plot of a CFS path of the wolf:
+![image](https://user-images.githubusercontent.com/17884767/116432467-a1122580-a816-11eb-92e6-5e2f463c52d9.png)
 
 ## References
 Haisen Zhao, Fanglin Gu, Qi-Xing Huang, Jorge Garcia, Yong Chen, Changhe Tu, Bedrich Benes, Hao Zhang, Daniel Cohen-Or, and Baoquan Chen. 2016. Connected fermat spirals for layered fabrication. ACM Trans. Graph. 35, 4, Article 100 (July 2016), 10 pages. DOI:https://doi.org/10.1145/2897824.2925958
