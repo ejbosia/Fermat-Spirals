@@ -112,7 +112,7 @@ def optimization(polygon, param_reg=1.0, param_smh=200.0, param_spacing=1.0, loc
 '''
 Applies optimization to a polygon
 '''
-def optimize_polygon(polygon):
+def optimize_polygon(polygon, opt_reg=1, opt_smh=10, opt_spacing=0, samples=1):
     s = list(sample(polygon.exterior,samples).coords)
     
     # only run optimization on polygons that are large enough

@@ -99,4 +99,4 @@ def convert(image, approximation = cv2.CHAIN_APPROX_SIMPLE, optimize=False, simp
     if simplify > 0:
         polygons = [polygon.simplify(simplify) for polygon in polygons]
     
-    return polyons
+    return polygons
