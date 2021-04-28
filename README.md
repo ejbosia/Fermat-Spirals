@@ -33,6 +33,10 @@ An example command that opens "picture.png" from the local directory, runs ferma
 python3 main.py "picture.png" 2 -fs -o -p -g "temp.gcode"
 '''
 
+'''
+here is some code
+'''
+
 ## Example Results:
 Here is a plot of a CFS path of the wolf:
 ![image](https://user-images.githubusercontent.com/17884767/116432467-a1122580-a816-11eb-92e6-5e2f463c52d9.png)
