@@ -12,17 +12,19 @@ parser.add_argument("filename", help="path to image file", type=str)
 parser.add_argument("distance", help="line thickness", type=float)
 
 group = parser.add_mutually_exclusive_group()
-group.add_argument("-s", "--spiral")
-group.add_argument("-fs", "--fermat")
-group.add_argument("-cfs", "--connected_fermat")
+group.add_argument("-s", "--spiral", action='store_true')
+group.add_argument("-fs", "--fermat", action='store_true')
+group.add_argument("-cfs", "--connected_fermat", action='store_true')
 
-parser.add_argument("-o","--optimize", help="enable polygon optimization")
-parser.add_argument("-p", "--plot", help="enable plotting")
+parser.add_argument("-o","--optimize", help="enable polygon optimization", action='store_true')
+parser.add_argument("-p", "--plot", help="enable plotting", action='store_true')
 parser.add_argument("-g", "--gcode", help="enable output", type=str)
-parser.add_argument("-m", "--metrics", help="enable metrics")
+parser.add_argument("-m", "--metrics", help="enable metrics", action='store_true')
 
 import cv2
 from matplotlib import pyplot
+
+import os
 
 # import utility functions
 from shapely_conversion import convert
@@ -73,6 +75,7 @@ def plot_recursive_path(total_path, color=None, endpoints=False, intersections=F
             rest.append(path)
             
     plot_path(rest, color)
+    pyplot.gca().invert_yaxis()
 
 
 
@@ -108,15 +111,19 @@ def main():
 
 
     if args.plot:
-        plot_recursive_path(total_path)
+        plot_recursive_path(results)
         pyplot.show()
-    if args.gcode:
-        gc = GcodeWriter(filename='temp.gcode', scale = 0.1)
+
+    
+    if args.gcode != "":
+        assert args.gcode.split('.')[-1] == 'gcode'
+        gc = GcodeWriter(filename=args.gcode, scale = 0.1)
         gc.convert(results)
+    
+
     if args.metrics:
         m = Metrics(segments=True, commands=True, curvature=False, underfill=True, overfill=True)
-        print(m.measure(results, path_type, distance, polygons))
-
+        print(m.measure(results, os.path.basename(filename), path_type, distance, polygons))
 
 
 if __name__ == "__main__":

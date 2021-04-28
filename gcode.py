@@ -96,21 +96,23 @@ class GcodeWriter:
         # loop through each path
         for path in total_path:
             
-            # move to p0
-            output += self.command_rapid(path[0])
-            
-            # pen down
-            output += self.command_down()
-            
-            p0 = path[0]
+            if path:
 
-            # trace the path
-            for p1 in path[1:]:
-                output += self.command_move(p1)
+                # move to p0
+                output += self.command_rapid(path[0])
                 
-            # pen up
-            output += self.command_up()
-        
+                # pen down
+                output += self.command_down()
+                
+                p0 = path[0]
+
+                # trace the path
+                for p1 in path[1:]:
+                    output += self.command_move(p1)
+                    
+                # pen up
+                output += self.command_up()
+            
         # home machine
         output += "G28;\n"
                 

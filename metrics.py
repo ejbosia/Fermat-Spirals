@@ -129,7 +129,7 @@ class Metrics:
     '''
     Return a dictionary of measurements. Unused measurements are returned as np.Nan
     '''
-    def measure(self, total_path, method, distance, polygons=None):
+    def measure(self, total_path, filename, method, distance, polygons=None):
 
         assert type(distance) is float or type(distance) is int
 
@@ -137,6 +137,7 @@ class Metrics:
             assert not polygons is None
 
         measurements = {
+            "Filename": filename,
             "Method": method,
             "Distance": distance,
             "Segments": np.nan,
