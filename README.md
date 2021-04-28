@@ -10,9 +10,9 @@ The code can be executed either through the "Fermat Spiral Paper" Jupyter Notebo
 ### Command Line Interface
 The code can be run with this command. Note the filename and distance are required inputs:
 
-'''bash
+```bash
 python3 main.py filename distance
-'''
+```
 
 There are optional commands that can be used to control the desired output of the program. They are listed below:
 
@@ -29,13 +29,10 @@ Optional Arguments:
 
 An example command that opens "picture.png" from the local directory, runs fermat spiral generation at distance = 2, uses optimization, displays a plot of the path, and outputs a gcode file to "temp.gcode" in the local directory.
 
-'''sh
+```sh
 python3 main.py "picture.png" 2 -fs -o -p -g "temp.gcode"
-'''
+```
 
-'''
-here is some code
-'''
 
 ## Example Results:
 Here is a plot of a CFS path of the wolf:
