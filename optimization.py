@@ -8,6 +8,8 @@ import cvxpy as cp
 from shapely.geometry import Point
 from shapely.geometry import Polygon
 
+from shapely_utilities import sample
+
 from functools import lru_cache
 
 def get_coord_list(polygon):
@@ -106,3 +108,25 @@ def optimization(polygon, param_reg=1.0, param_smh=200.0, param_spacing=1.0, loc
         return Polygon(points)
     else:
         return points
+
+'''
+Applies optimization to a polygon
+'''
+def optimize_polygon(polygon):
+    s = list(sample(polygon.exterior,samples).coords)
+    
+    # only run optimization on polygons that are large enough
+    if len(s) > 5:
+        ext = optimization(s, opt_reg, opt_smh, opt_spacing, False)
+
+        ints = []
+
+        for interior in polygon.interiors:
+            i = list(sample(interior,samples).coords)
+    
+            if len(i) > 5:
+                ints.append(optimization(i, opt_reg, opt_smh, opt_spacing, False))
+
+        polygon = Polygon(ext, holes=ints)
+    
+    return polygon
