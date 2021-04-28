@@ -115,7 +115,7 @@ def main():
         pyplot.show()
 
     
-    if args.gcode != "":
+    if not args.gcode is None:
         assert args.gcode.split('.')[-1] == 'gcode'
         gc = GcodeWriter(filename=args.gcode, scale = 0.1)
         gc.convert(results)
