@@ -5,6 +5,7 @@ The GcodeWriter takes in a array-like path of array-like points (2D or 3D) and c
 '''
 
 from shapely.geometry import Point, LineString
+from numpy import sqrt
 
 class GcodeWriter:
 
@@ -21,18 +22,19 @@ class GcodeWriter:
         self.filename = filename
         self.extruder = extruder
         self.scale = scale
-        self.x_offset = x_offset
-        self.y_offset = y_offset
-        self.z_offset = z_offset
 
         self.coordinate = ['X','Y','Z']
-
+        self.offsets = {
+            "X": x_offset,
+            "Y": y_offset,
+            "Z": z_offset, 
+        }
 
     '''
     Convert a point into GCODE coordinates ~ assumes p is X,Y,Z in that order with Z optional
     '''
     def convert_point(self, p):
-        return " ".join([self.coordinate[i] + str(value * self.scale) for i,value in enumerate(p)])
+        return " ".join([self.coordinate[i] + str(value * self.scale + self.offsets[self.coordinate[i]]) for i,value in enumerate(p)])
 
 
     '''
@@ -41,7 +43,18 @@ class GcodeWriter:
     def command_move(self, p):
         return "G01 " + self.convert_point(p) + ";\n"
 
-    
+
+
+    '''
+    Move with printing
+    '''
+    def command_print(self, start, end, E=0.031617):
+
+        distance = self.scale * sqrt((start[0]-end[0])**2 + (start[1]-end[1])**2)
+
+        return "G01 " + self.convert_point(end) + " E" + str(E * distance) + ";\n"
+
+
     '''
     Rapid move to point
     '''
@@ -89,9 +102,11 @@ class GcodeWriter:
             # pen down
             output += self.command_down()
             
+            p0 = path[0]
+
             # trace the path
-            for p in path[1:]:
-                output += self.command_move(p)
+            for p1 in path[1:]:
+                output += self.command_move(p1)
                 
             # pen up
             output += self.command_up()
@@ -116,26 +131,44 @@ class GcodeWriter:
 
         current_layer = layer
 
-        output = self.header()
+        # add the prusa printer header
+        with open("prusa_mk3s.txt") as f:
+            output = "".join(f.readlines())
+
+        output += "G1 F1200.000;\n"
 
         while current_layer < height:
             for path in total_path:
                 
+                
                 # move to p0
                 output += self.command_rapid(path[0])
                 
+                # undo retraction
+                output += "G1 E1.40000 F2100.00000;\n"
+
                 # pen down
                 output += "G01 Z" + str(current_layer) + ";\n"
                 
+                p0 = path[0]
+
                 # trace the path
-                for p in path[1:]:
-                    output += self.command_move(p)
+                for p1 in path[1:]:
+                    output += self.command_print(p0, p1)
+                    p0 = p1
                     
+                # retraction
+                output += "G1 E-1.40000 F2100.00000;\n"
+
                 # pen up
-                output += "G01 Z" + str(current_layer + 2) + ";\n"
+                output += "G01 Z" + str(current_layer + 0.2) + ";\n"
             
-        # home machine
-        output += "G28 X Y;\n"
+            current_layer += layer
+            output += "G01 Z" + str(current_layer + 0.2) + ";\n"
+
+        # add the prusa printer footer
+        with open("prusa_mk3s_end.txt") as f:
+            output += "".join(f.readlines())
                 
         # write the code to a gcode file
         if not self.filename is None:

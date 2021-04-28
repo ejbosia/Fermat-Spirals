@@ -7,7 +7,7 @@ from shapely.geometry import LineString, MultiPolygon
 
 class Metrics:
 
-    def __init__(self, segments=True, commands=True, curvature=True, underfill=False, overfill=False):
+    def __init__(self, segments=True, commands=True, curvature=False, underfill=False, overfill=False):
 
         self.segments = segments
         self.commands = commands
@@ -82,7 +82,7 @@ class Metrics:
     '''
     Find "underfill" areas of the polygon ~ returns a percentage from the total
     '''
-    def measure_underfill(self, total_path, polygons, distance, epsilon=0.001):
+    def measure_underfill(self, total_path, polygons, distance, epsilon=0.0000001):
 
         # create a multipolygon from polygons
         fill_polygons = MultiPolygon(polygons)
@@ -97,6 +97,34 @@ class Metrics:
 
 
         return fill_polygons.area/fill_area
+
+    
+    '''
+    Find "overfill" areas of the polygon ~ returns a percentage from the total
+    '''
+    def measure_overfill(self, total_path, distance):
+
+        ideal = 0
+        actual = 0
+
+        # calculate the area difference
+        for path in total_path:
+            
+            # ideal path area with no overlap
+            ideal += LineString(path).length * distance
+
+            # actual path area
+            actual += LineString(path).buffer(distance/2, cap_style=2, join_style=2).area
+
+        '''
+        calculate the overfill
+         - the ideal area assumes each line segment is a rectangle. Even changing angles preserve the area of the line segments
+         - the actual area calculates the rectangular buffer of the path. Overlapped areas are merged, meaning the area is lowered by one of the overlap areas
+         - to get the true overlap, the area of the overlap needs to be doubled
+        '''
+        overlap = ideal - actual
+
+        return overlap * 2 / ideal
 
     '''
     Return a dictionary of measurements. Unused measurements are returned as np.Nan
@@ -127,5 +155,5 @@ class Metrics:
         if self.underfill:
             measurements["Underfill"] = self.measure_underfill(total_path, polygons, distance)
         if self.overfill:
-            raise NotImplementedError
+            measurements["Overfill"] = self.measure_overfill(total_path, distance)
         return measurements
