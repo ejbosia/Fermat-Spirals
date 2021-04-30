@@ -3,8 +3,17 @@ Connected Fermat Spirals are a space filling curve that could be used for additi
 
 The goal of this project is to implement the algorithm as presented in the paper and ultimately use this algorithm to generate a fill pattern for 3D printing.
 
+## Installation Instructions
+The code was developed on Python 3.8. It requires a few third party libraries to run:
+ - Shapely: https://pypi.org/project/Shapely/
+ - OpenCV: https://opencv.org/
+ - Matplotlib: https://matplotlib.org/
+ - Numpy: https://numpy.org/
+ - Cvxpy: https://www.cvxpy.org/
 
-## Code Execution Instructions
+These can all be installed using the "requirements.txt" file, except for **cvxpy**. This library should be manually installed using the **install from source** instructions found here: https://www.cvxpy.org/install/index.html. 
+
+## Execution Instructions
 The code can be executed either through the "Fermat Spiral Paper" Jupyter Notebook, or through **main.py** using the CLI.
 
 ### Command Line Interface
@@ -32,7 +41,6 @@ An example command that opens "picture.png" from the local directory, runs ferma
 ```sh
 python3 main.py "picture.png" 2 -fs -o -p -g "temp.gcode"
 ```
-
 
 ## Example Results:
 Here is a plot of a CFS path of the wolf:
