@@ -14,6 +14,74 @@ import numpy as np
 
 from matplotlib import pyplot
 
+
+'''
+Spiral Class
+
+This stores the components that make a spiral ~ a list of separate paths that can be formatted into a full path.
+'''
+class Spiral:
+
+    '''
+    Initialize the spiral ~ to do this, just need to find the start and end points of each contour
+    '''
+    def __init__(self, contours, distance):
+       
+        self.contours = []
+
+        start = contours[0].coords[0]
+
+        end = calculate_endpoint(contours[0], distance)
+
+        # find the start and end point of each contour
+        for contour in contours[1:]:
+
+
+
+
+
+
+
+    '''
+    Output the path as a list of points
+    '''
+    def get_path(self):
+        path = []
+
+        for c in self.contours:
+            path.extend(c)
+        
+        # remove duplicates
+        path = list(dict.fromkeys(path))
+
+        return path
+
+
+class SpiralGenerator:
+
+    def __init__(self, polygons, distance, boundaries=0):
+        self.polygons = polygons
+        self.distance = distance
+        self.boundaries = 0
+
+
+    # create a list of Spirals from the polygons
+    def generate(self):
+
+        spirals = []
+
+        for polygon in self.polygons:
+            
+            # get the isocontours
+            contours = distance_transform_diff(polygon, distance)
+            
+            # initialize the spiral
+            spirals.append(Spiral(contours, self.distance))
+
+        
+
+
+
 '''
 Calculate a point a distance away from a position on the contour in a given direction
 this is where the contour is rerouted to the next spiral
@@ -160,9 +228,7 @@ Pick a good start point for spiral generation
 This should be a point that...
  - has a large angle difference
  - has a long flat line
-
 '''
-
 def generate_start_point(contour, index):
 
     # find the longest line segment in contour
@@ -324,9 +390,6 @@ def generate_path(contour_family, distance, start_index=0):
 
             start_length = LineString(path)
 
-            # remove any self intersections in the path
-            # path = remove_intersections(path)
-
             done = LineString(path).is_simple
             i += 1
 
@@ -351,9 +414,9 @@ def generate_total_path(isocontours, distance):
         else:
             contour_family.append(branch)
 
-        path = generate_path(contour_family, distance)
+        spiral = generate_path(contour_family, distance)
     
-    total_path.append(path)
+    total_path.append(spiral)
 
     return total_path
 
