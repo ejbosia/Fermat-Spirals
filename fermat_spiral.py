@@ -8,7 +8,7 @@ from spiral import calculate_point, calculate_point_contour, calculate_endpoint
 
 from shapely.geometry import Point, LineString
 
-from shapely_utilities import cut
+from shapely_utilities import cut, reverse
 
 from spiral import Spiral
 
@@ -21,18 +21,13 @@ class FermatSpiralGenerator:
         self.distance = distance
 
 
-
-
-
-
     '''
     Generate the Fermat Spiral
     '''
-    def generate_backup(self):
+    def generate(self):
 
         outer_list = []
-
-        reverse = []
+        remainder = []
     
         # loop through the even contours
         for i, contour in enumerate(self.spiral.contours): 
@@ -44,12 +39,11 @@ class FermatSpiralGenerator:
                 if reroute is None:
                     break
 
-
                 p1, p2 = cut(contour, contour.project(reroute))
                 
                 # add the first piece to the outer list
                 outer_list.append(p1)
-                reverse.append(p2)
+                remainder.append(p2)
             
             else: 
                 # project onto the next contour
@@ -61,13 +55,21 @@ class FermatSpiralGenerator:
                 if not p2 is None:
                     outer_list.append(p2)
 
-                reverse.append(p1)
+                remainder.append(p1)
 
+        inner_spiral = []
 
-        
+        # cut the even parts of the reverse
+        for r in remainder[::-1][::2]:
+            reroute = calculate_endpoint(r, self.distance)
 
+            if reroute is None:
+                continue
 
-        return outer_list, reverse
+            inner_spiral.append(reverse(cut(r, r.project(reroute))[0]))
+            
+
+        return outer_list, inner_spiral
 
 
 
