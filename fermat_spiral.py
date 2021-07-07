@@ -4,12 +4,72 @@ Methods for generating fermat spirals from input spirals
 @author ejbosia
 '''
 
-import spiral as S
-from spiral import calculate_point, calculate_point_contour
+from spiral import calculate_point, calculate_point_contour, calculate_endpoint
 
 from shapely.geometry import Point, LineString
 
-from shapely_utilities import cut, distance_transform_diff
+from shapely_utilities import cut
+
+from spiral import Spiral
+
+
+
+class FermatSpiralGenerator:
+
+    def __init__(self, spiral, distance):
+        self.spiral = spiral
+        self.distance = distance
+
+
+
+
+
+
+    '''
+    Generate the Fermat Spiral
+    '''
+    def generate_backup(self):
+
+        outer_list = []
+
+        reverse = []
+    
+        # loop through the even contours
+        for i, contour in enumerate(self.spiral.contours): 
+            
+            if i%2 == 0:
+                # get the reroute point away from the end towards start
+                reroute = calculate_endpoint(contour, self.distance)
+
+                if reroute is None:
+                    break
+
+
+                p1, p2 = cut(contour, contour.project(reroute))
+                
+                # add the first piece to the outer list
+                outer_list.append(p1)
+                reverse.append(p2)
+            
+            else: 
+                # project onto the next contour
+                position = contour.project(reroute)
+
+                p1, p2 = cut(contour, position)
+                
+                # drive to the end of the contour
+                if not p2 is None:
+                    outer_list.append(p2)
+
+                reverse.append(p1)
+
+
+        
+
+
+        return outer_list, reverse
+
+
 
 
 '''
