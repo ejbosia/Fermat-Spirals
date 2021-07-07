@@ -29,18 +29,19 @@ class Spiral:
        
         self.contours = []
 
-        start = contours[0].coords[0]
-
-        end = calculate_endpoint(contours[0], distance)
+        end = None
 
         # find the start and end point of each contour
-        for contour in contours[1:]:
+        for contour in contours:
+
+            if not end is None:
+                # set start to the the closest point to the end point?
+                start = ??
+
+                cycle(contour, s)
 
 
-
-
-
-
+            end = calculate_endpoint(contour)
 
     '''
     Output the path as a list of points
@@ -55,6 +56,48 @@ class Spiral:
         path = list(dict.fromkeys(path))
 
         return path
+
+
+
+'''
+Find the endpoint guarenteed ~ avoids finding the wrong point in calculate point
+'''
+def calculate_endpoint(contour, radius, forward = False):
+    
+    # set the direction of the error
+    direction = 1 if forward else -1
+    
+    index = -1
+
+    # reverse the contour coords to loop backwards through them
+    points = contour.coords[::-1]
+
+    start = Point(points[0])
+
+    # find the first distance past the position (all previous will be before the position)
+    for i, p in enumerate(points):
+        
+        dis = start.distance(Point(p))
+
+        if dis > radius:
+            index = i
+            break
+    else:
+        return None
+
+    # set the index correctly to match reverse
+    i1 = index
+    i0 = (index-1)
+
+
+    # we know the intersection must be on this line, and there can only be one
+    distance_ring = start.buffer(radius).exterior
+    line = LineString(points[i0:i1+1])
+
+    # the return of this must be a point
+    point = distance_ring.intersection(line)
+        
+    return point
 
 
 class SpiralGenerator:
