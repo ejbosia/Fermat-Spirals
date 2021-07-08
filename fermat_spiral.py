@@ -26,26 +26,40 @@ class FermatSpiralGenerator:
     '''
     def generate(self):
 
-        outer_list = []
-        remainder = []
-    
+        s1 = self._generate_spiral(0)
+        s2 = self._generate_spiral(1, invert = True)
+
+        return s1 + s2
+
+
+    def _generate_spiral(self, index, invert = False):
+
+        spiral = []
+
+        length = int(len(self.spiral.contours)/2)
+
         # loop through the even contours
-        for i, contour in enumerate(self.spiral.contours): 
+        for i in range(length): 
             
-            if i%2 == 0:
-                # get the reroute point away from the end towards start
-                reroute = calculate_endpoint(contour, self.distance)
+            i = i * 2 + index
+            print(i)
 
-                if reroute is None:
-                    break
+            contour = self.spiral.contours[i]
 
-                p1, p2 = cut(contour, contour.project(reroute))
+            # get the reroute point away from the end towards start
+            reroute = calculate_endpoint(contour, self.distance)
+
+            if reroute is None:
+                break
+
+            p1, p2 = cut(contour, contour.project(reroute))
+            
+            # add the first piece to the outer list
+            spiral.append(p1)
+
+            if i + 1 < length:
+                contour = self.spiral.contours[i+1]
                 
-                # add the first piece to the outer list
-                outer_list.append(p1)
-                remainder.append(p2)
-            
-            else: 
                 # project onto the next contour
                 position = contour.project(reroute)
 
@@ -53,103 +67,12 @@ class FermatSpiralGenerator:
                 
                 # drive to the end of the contour
                 if not p2 is None:
-                    outer_list.append(p2)
+                    spiral.append(p2)
 
-                remainder.append(p1)
+        if invert:
+            spiral = [reverse(s) for s in spiral[::-1]]
 
-        inner_spiral = []
-
-        # cut the even parts of the reverse
-        for r in remainder[::-1][::2]:
-            reroute = calculate_endpoint(r, self.distance)
-
-            if reroute is None:
-                continue
-
-            inner_spiral.append(reverse(cut(r, r.project(reroute))[0]))
-            
-
-        return outer_list, inner_spiral
-
-
-
-
-'''
-Find the next endpoint in the path
- - this is the endpoint one "loop" around the contour
- - the next endpoint should be where the projection distance is greater than the distance away from the start
-'''
-def calculate_break(path, start, radius):
-
-    dis = 0
-    
-    while dis <= radius:
-        _,path = cut(path,radius)
-        
-        if path is None:
-            return None
-        
-        dis = path.project(start)
-    
-    
-    return path.interpolate(dis)
-
-
-'''
-Build the outer spiral of the fermat spiral
-'''  
-def outer_spiral(path, distance):
-    
-    path = LineString(path)
-    
-    # start at the first point in the contour
-    start = Point(path.coords[0])
-    
-    spiral = []
-    outer_pieces = []
-
-    while True:        
-
-        end = calculate_break(path, start, distance)
-        # return if the end point is the end of the path
-        if end is None or path.project(end) == path.length:   
-            return spiral+list(path.coords), outer_pieces, True
-        
-
-        # get the reroute point away from the end towards start
-        reroute = calculate_point(path, path.project(end), distance, forward=False)
-
-
-        # if there is no reroute point, we will return the spiral from start to calculated end ~ too small to make fermat
-        if reroute is None:
-            ls,_ = cut(LineString(path), LineString(path).project(end))
-
-            return spiral+list(ls.coords), [], True
-
-
-        p1,center = cut(path, path.project(reroute))
-
-        # complete the reroute of the path at the end point
-        center,p2 = cut(center, center.project(end))
-
-        # get the inner point
-        # - this is the point that is a distance farther than the projection distance
-        start = calculate_break(p2, reroute, distance)
-
-        # add these coordinates to the spirals
-        spiral.extend(list(p1.coords))
-
-        # if the length of the remaining path is where the next jump would be, break the loop
-        if start is None or p2.project(start) == p2.length:
-            return spiral + list(p2.coords)[::-1], outer_pieces, True
-        
-        # cut the inner contour at this point
-        outer, inner = cut(p2, p2.project(start))
-        outer_pieces.append(outer)
-
-        # set the path to the inner part of the spiral
-        path = inner
-        
+        return spiral
 
 
 '''
