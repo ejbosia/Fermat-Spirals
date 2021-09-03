@@ -1,9 +1,9 @@
 from setuptools import setup
 
 setup(
-    name='patterns-tests',
+    name='drawbot-tests',
     version='0.1',
     install_requires=['pytest'],
-    packages=['patterns'],
-    package_data={'patterns': ['tests/*', 'tests/**/*']},
+    packages=['src'],
+    package_data={'src': ['tests/*', 'tests/**/*']},
 )

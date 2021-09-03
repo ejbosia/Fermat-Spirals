@@ -4,6 +4,16 @@
 
 import src.utilities.shapely_utilities as SU
 
+from shapely.geometry import LineString, Point
+
+'''
+Create a list of linestrings for testing
+'''
+def generate_linestrings():
+    pass
+
+
+
 def test_distance_transform():
     pass
 
@@ -15,12 +25,41 @@ def test_distance_transform_diff():
 
 # not testing plotting functions
 
-
 '''
 Cut a linestring at a specified distance. This always returns at least one linestring and a None, or two linestrings
 '''
 def test_cut():
-   pass
+
+    # create a linestring
+    ls = LineString([(0,0),(10,0),(10,10),(20,10)])
+
+    # test a normal cut
+    start, end = SU.cut(ls, 15)
+
+    assert start.length == 15
+    assert end.length == ls.length - 15
+    assert start.coords[-1] == end.coords[0]
+
+    # test cutting on the start
+    start, end = SU.cut(ls, 0)
+    assert start is None
+    assert end == ls
+
+    # test cutting on the end
+    start, end = SU.cut(ls, ls.length)
+    assert start == ls
+    assert end is None
+
+    # test cutting a negative distance
+    start, end = SU.cut(ls,-1)
+    assert start is None
+    assert end == ls
+
+    # test cutting farther than the length
+    start, end = SU.cut(ls, ls.length+1)
+    assert start == ls
+    assert end is None
+
 
 
 '''
