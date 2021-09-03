@@ -121,18 +121,16 @@ def cut(line, distance):
 '''
 Reformat the linestring so position 0 is the start point. This may involve inserting a new point into the contour.
 '''
-def cycle(contour, point):
-    
-    # find the point projection on the contour
-    proj = contour.project(point)
-    
+def cycle(contour, distance):
+
+    # force the distance to within the contour
+    distance = distance % contour.length
+        
     # cut the contour at the projection distance
-    result = cut(contour, proj)
+    result = cut(contour, distance)
     
-    if result[0] is None:
-        points = result[1]
-    elif result[1] is None:
-        points = result[0]
+    if result[0] is None or result[1] is None:
+        points = list(contour.coords)
     else:
         [ls1,ls2] = result
         points = list(ls2.coords) + list(ls1.coords)
@@ -211,7 +209,7 @@ def reverse(ls):
 Merge two linestrings
 '''
 def merge(ls1, ls2):
-    return LineString(ls1.coords + ls2.coords)
+    return LineString(list(ls1.coords) + list(ls2.coords))
 
 
 '''
