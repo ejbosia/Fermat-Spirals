@@ -4,15 +4,11 @@ Generate a space-filling spiral path on an input polygon
 @author ejbosia
 '''
 
-from shapely_utilities import distance_transform_diff, cut, cycle, self_intersections_binary, reverse
+from ..shapely_utilities import distance_transform_diff, cut, cycle, self_intersections_binary, reverse
 
 from shapely.geometry import Point, LineString, Polygon
 
-from time import time
-
 import numpy as np
-
-from matplotlib import pyplot
 
 '''
 Calculate a point a distance away from a position on the contour in a given direction

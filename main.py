@@ -31,15 +31,12 @@ from shapely_conversion import convert
 from shapely_utilities import *
 
 # import spiral generation
-import spiral as S
-import fermat_spiral as FS
-
-# optimization module
-from optimization import optimization
+import patterns.spirals as S
+import patterns.spirals.cfs.fermat_spiral as FS
 
 # add-on modules
-from metrics import Metrics
-from gcode import GcodeWriter
+from drawbot.metrics import Metrics
+from drawbot.gcode import GcodeWriter
 
 
 
