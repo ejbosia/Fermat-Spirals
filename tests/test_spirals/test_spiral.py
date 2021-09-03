@@ -1,27 +1,26 @@
 import pytest
 
-import src.spirals.spiral as S
+from src.spirals.spiral import Spiral, SpiralGenerator
 
-def test_start_point():
+
+# returns a list of polygons from test images
+def generate_polygons():
     pass
 
-def test_calculate_point():
-    pass
 
-def test_calculate_endpoint():
-    pass
+def test_generator_creation():
+    
+    polygons = generate_polygons()
 
-def test_calculate_point_contour():
-    pass
+    # test empty polygons
+    with pytest.raises(ValueError):
+        SpiralGenerator([],1)
 
-def test_generate_start_point():
-    pass
+    # test low distance values
+    with pytest.raises(ValueError):
+        SpiralGenerator(polygons,0)
+    with pytest.raises(ValueError):
+        SpiralGenerator(polygons,-1)
 
-def test_remove_intersections():
-    pass
-
-'''
-Test spiral generation on a set of test images
-'''
-def test_execute():
+def test_spiral():
     pass

@@ -28,12 +28,14 @@ from src.utilities.shapely_conversion import convert
 from src.utilities.shapely_utilities import *
 
 # import spiral generation
-import src.spirals.spiral as S
+from src.spirals.spiral import SpiralGenerator
 import src.spirals.cfs.fermat_spiral as FS
 
 # add-on modules
 from src.utilities.metrics import Metrics
 from src.utilities.gcode import GcodeWriter
+
+import numpy as np
 
 '''
 Plot a single path
@@ -90,7 +92,7 @@ def main():
 
     # determine which path to create
     if args.spiral:
-        results = S.execute(polygons, distance)
+        spirals = SpiralGenerator(polygons, distance).generate()
         path_type = "S"
     elif args.fermat:
         results = FS.execute(polygons, distance, connected=False)
@@ -102,7 +104,10 @@ def main():
         raise NotImplementedError("SPIRAL TYPE NOT INPUT")
 
     if args.plot:
-        plot_recursive_path(results)
+        for spiral in spirals:
+            print(np.array(spiral.get_path()).shape)
+            if spiral.get_path():
+                pyplot.plot(np.array(spiral.get_path())[:,0], np.array(spiral.get_path())[:,1])
         pyplot.show()
 
     if not args.gcode is None:

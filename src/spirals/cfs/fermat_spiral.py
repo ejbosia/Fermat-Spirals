@@ -11,8 +11,7 @@ from shapely.geometry import Point, LineString
 
 from src.utilities.shapely_utilities import cut, distance_transform_diff
 
-from spiral import Spiral
-
+from src.spirals.spiral import Spiral
 
 
 class FermatSpiralGenerator:
