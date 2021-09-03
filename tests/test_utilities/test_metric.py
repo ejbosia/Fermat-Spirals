@@ -1,4 +1,3 @@
-import pytest
 
 from src.utilities.metrics import Metrics
 

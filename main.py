@@ -2,8 +2,6 @@
 This is a cli for the spiral generation
 '''
 
-
-
 import argparse
 
 parser = argparse.ArgumentParser()
@@ -36,8 +34,6 @@ import src.spirals.cfs.fermat_spiral as FS
 # add-on modules
 from src.utilities.metrics import Metrics
 from src.utilities.gcode import GcodeWriter
-
-
 
 '''
 Plot a single path
@@ -105,12 +101,10 @@ def main():
     else:
         raise NotImplementedError("SPIRAL TYPE NOT INPUT")
 
-
     if args.plot:
         plot_recursive_path(results)
         pyplot.show()
 
-    
     if not args.gcode is None:
         assert args.gcode.split('.')[-1] == 'gcode'
         gc = GcodeWriter(filename=args.gcode, scale = 0.1)

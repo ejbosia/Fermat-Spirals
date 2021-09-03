@@ -30,6 +30,7 @@ def generate_border_lines(image, approximation = cv2.CHAIN_APPROX_SIMPLE):
 
     return contour_list
 
+
 '''
 Get all of the children of the parent contour using heirarchy information
 '''
@@ -50,6 +51,7 @@ def get_children(contour_list, parent_contour):
     
     # return the list of children
     return child_list
+
 
 '''
 Convert formatted list of contours with heirarchy info into polygons
@@ -77,8 +79,6 @@ def create_contour_families(contour_list):
                 family_list.append(Polygon(contour[0], holes=child_list))
 
     return family_list
-
-
 
 
 '''
