@@ -4,19 +4,19 @@ Generate a space-filling spiral path on an input polygon
 @author ejbosia
 '''
 
-from src.utilities.shapely_utilities import distance_transform_diff, cut, cycle, self_intersections_binary, reverse
+from src.utilities.shapely_utilities import distance_transform, cut, cycle, self_intersections_binary, reverse
+from src.spirals.fill_pattern import FillPattern
 
 from shapely.geometry import Point, LineString, Polygon
 
 import numpy as np
-
 
 '''
 Spiral Class
 
 This stores the components that make a spiral ~ a list of separate paths that can be formatted into a full path.
 '''
-class Spiral:
+class Spiral(FillPattern):
 
     '''
     Initialize the spiral ~ to do this, just need to find the start and end points of each contour
@@ -86,7 +86,7 @@ class SpiralGenerator:
         for polygon in self.polygons:
             
             # get the isocontours
-            contours = distance_transform_diff(polygon, self.distance)
+            contours = distance_transform(polygon, self.distance)
             contours = self._flatten(contours)
             
             # initialize a spiral for each set of contours

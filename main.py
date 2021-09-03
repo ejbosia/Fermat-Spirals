@@ -37,41 +37,6 @@ from src.utilities.gcode import GcodeWriter
 
 import numpy as np
 
-'''
-Plot a single path
-'''
-def plot_path(path, color=None):
-    
-    X = []
-    Y = []
-
-    for p in path:
-        X.append(p[0])
-        Y.append(p[1])
-        
-    pyplot.plot(X,Y,c=color)
-
-'''
-Plot a list of paths
-'''
-def plot_recursive_path(total_path, color=None, endpoints=False, intersections=False):
-    
-    rest = []
-    
-    for path in total_path:
-        
-        if type(path) is list:
-            plot_path(path, color)
-            if intersections:
-                for i in self_intersections_binary(LineString(path)):
-                    pyplot.scatter(i.x,i.y, c='red')
-        else:
-            rest.append(path)
-            
-    plot_path(rest, color)
-    pyplot.gca().invert_yaxis()
-
-
 
 def main():
     

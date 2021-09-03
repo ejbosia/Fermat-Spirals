@@ -12,38 +12,10 @@ from shapely.geometry import CAP_STYLE, JOIN_STYLE
 from matplotlib import pyplot
 
 '''
-Recursively run the distance transform on the input polygon
-- if result is empty, terminate with empty list
-- if result is Polygon, add current Polygon
-- if result is MultiPolygon, run for each Polygon in the MultiPolygon
-'''
-def distance_transform(polygon, distance):
-        
-    t = polygon.buffer(distance, cap_style = CAP_STYLE.flat, join_style = JOIN_STYLE.mitre)
-    
-    # if t is empty, return the empty list
-    if not t:
-        return []
-        
-    result = []
-
-    # MultiPolygons are the result of concave shapes ~ distance transform creates multiple polygons
-    if t.type == "MultiPolygon":
-        for p in t:
-            result.append([p])
-            result[-1].extend(distance_transform(p, distance))
-    else:
-        result.append(t)
-        result.extend(distance_transform(t, distance))
-        
-    return result
-
-'''
 Distance transform without changing holes
 '''
-def distance_transform_diff(polygon, distance):
+def distance_transform(polygon, distance):
 
- 
     if polygon.is_empty:
         return []
 

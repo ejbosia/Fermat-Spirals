@@ -84,9 +84,10 @@ def create_contour_families(contour_list):
 Convert an image into a list of shapely polygons.
  - use this function to perform all of the conversion steps
 '''
-def convert(image, approximation = cv2.CHAIN_APPROX_SIMPLE, optimize=False, simplify=1):
+def convert(image, approximation = cv2.CHAIN_APPROX_SIMPLE, simplify=0):
    
-    assert simplify >= 0
+    if simplify < 0:
+        raise ValueError("SIMPLIFY MUST BE GEQ 0")
 
     contour_list = generate_border_lines(image, approximation)
 

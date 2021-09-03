@@ -6,6 +6,10 @@ import src.utilities.shapely_utilities as SU
 
 from shapely.geometry import LineString, Point
 
+import pytest
+
+EPSILON = 1e-8
+
 '''
 Create a list of linestrings for testing
 '''
@@ -13,15 +17,12 @@ def generate_linestrings():
     pass
 
 
-
+'''
+Test the distance transform
+'''
 def test_distance_transform():
     pass
 
-'''
-Distance transform without changing holes
-'''
-def test_distance_transform_diff():
-    pass
 
 # not testing plotting functions
 
@@ -61,6 +62,10 @@ def test_cut():
     assert end is None
 
 
+# return the length of the linestring, including the straightline distance from start to end
+def get_cycle_length(ls):
+    return ls.length + Point(ls.coords[0]).distance(Point(ls.coords[-1]))
+
 
 '''
 Reformat the linestring so position 0 is the start point. This may involve inserting a new point into the contour.
@@ -72,18 +77,18 @@ def test_cycle():
 
     # test normal cycle
     output = SU.cycle(ls, 15)
-    assert output.length == ls.length
-    assert output.coords[0] == list(ls.interpolate(15))
+    assert get_cycle_length(output) == get_cycle_length(ls)
+    assert Point(output.coords[0]) == ls.interpolate(15)
 
     # test cycle past end of linestring (similar to x rotations + some distance)
     output = SU.cycle(ls, ls.length+15)
-    assert output.length == ls.length
-    assert output.coords[0] == list(ls.interpolate(15))
+    assert get_cycle_length(output) == get_cycle_length(ls)
+    assert Point(output.coords[0]) == ls.interpolate(15)
 
     # test negative cycle ()
     output = SU.cycle(ls, -15)
-    assert output.length == ls.length
-    assert output.coords[0] == list(ls.interpolate(ls.length-15))
+    assert get_cycle_length(output) == get_cycle_length(ls)
+    assert Point(output.coords[0]) == ls.interpolate(ls.length-15)
 
     # test cycle on start (does nothing)
     assert ls == SU.cycle(ls, 0)
@@ -97,14 +102,20 @@ def test_cycle():
 Find any self intersections in the input linestring
 '''
 def test_self_intersections():
-    pass
+    no_intersection = LineString([(0,0), (5,5), (0,1)])
+
+    assert no_intersection.is_simple
+    assert not SU.self_intersections_binary(no_intersection)
 
 
 '''
-Find any self intersections in the input linestring using binary search like recursion
+Find any self intersections in the input linestring
 '''
 def test_self_intersections_binary():
-    pass
+    no_intersection = LineString([(0,0), (5,5), (0,1)])
+
+    assert no_intersection.is_simple
+    assert not SU.self_intersections_binary(no_intersection)
 
 
 '''
@@ -133,31 +144,40 @@ def test_merge():
 
 
 '''
-Evenly sample the linestring ~ this returns a list of points
+Test sampling function
 '''
 def test_sample():
+
+    SAMPLE_DIS = 1.0
     
     ls = LineString([(0,0),(10,0),(10,10),(20,10)])
 
-    assert len(ls.coords) == 4
+    points = SU.sample(ls, SAMPLE_DIS)
 
-    # check the sample distances
-    points = SU.sample(ls, 1)
+    # check the start point is included in the sample
+    assert points.coords[0] == ls.coords[0]
+
+    # check that the last point is within the sample distance from the end
+    assert ls.length - points.length <= SAMPLE_DIS + 1e-8
+
+    # check that the projection distances between points are correct
     p0 = None
     for p1 in points.coords:
         p1 = Point(p1)
         if not p0 is None:
-            assert p1.distance(p0) == 1.0
+            
+            # check that the points are the correct sample distance apart
+            assert abs(ls.project(p1) - ls.project(p0) - SAMPLE_DIS) < EPSILON
+        
         p0 = Point(p1)
 
-    assert len(points.coords) == 30
-    
-    # check the start point is included in the sample
-    assert points.coords[0] == ls.coords[0]
+        # check that the point is on the line
+        assert ls.distance(p0) < EPSILON
 
 
 '''
-Create a virtual boundary around a polygon ~ returns the exterior and a list of interiors
+
 '''
 def test_virtual_boundary():
     pass
+
