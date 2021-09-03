@@ -23,7 +23,6 @@ parser.add_argument("-m", "--metrics", help="enable metrics", action='store_true
 
 import cv2
 from matplotlib import pyplot
-
 import os
 
 # import utility functions
@@ -31,12 +30,12 @@ from src.utilities.shapely_conversion import convert
 from src.utilities.shapely_utilities import *
 
 # import spiral generation
-import patterns.spirals as S
-import patterns.spirals.cfs.fermat_spiral as FS
+import src.spirals.spiral as S
+import src.spirals.cfs.fermat_spiral as FS
 
 # add-on modules
-from drawbot.metrics import Metrics
-from drawbot.gcode import GcodeWriter
+from src.utilities.metrics import Metrics
+from src.utilities.gcode import GcodeWriter
 
 
 
