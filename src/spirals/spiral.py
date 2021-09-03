@@ -10,6 +10,139 @@ from shapely.geometry import Point, LineString, Polygon
 
 import numpy as np
 
+
+'''
+Spiral Class
+
+This stores the components that make a spiral ~ a list of separate paths that can be formatted into a full path.
+'''
+class Spiral:
+
+    '''
+    Initialize the spiral ~ to do this, just need to find the start and end points of each contour
+    '''
+    def __init__(self, contours, distance):
+        self.contours = self._generate_spiral(contours, distance)
+
+    '''
+    Generate the spiral
+    '''
+    def _generate_spiral(self, contours, distance):
+    
+        spiral_contours = []
+        end = None
+
+        # find the start and end point of each contour
+        for contour in contours:
+
+            # if there is a previous end point, find the start using this end point
+            if not end is None:
+
+                # set the start of the contour to the closest point to the end point
+                start = contour.interpolate(contour.project(end))
+                contour = cycle(contour, start)
+
+            end = calculate_endpoint(contour, distance)
+
+            # if there is a new valid end point, cut the contour and save the piece between the start and end point
+            if not end is None:
+                spiral_contours.append(cut(contour, contour.project(end))[0])
+
+        return spiral_contours
+
+
+    '''
+    Output the path as a list of points
+    '''
+    def get_path(self):
+        path = [c for contour in self.contours for c in contour.coords]
+        
+        # remove duplicates
+        path = list(dict.fromkeys(path))
+
+        return path
+
+'''
+Generate a list of Spirals from a list of polygons
+'''
+class SpiralGenerator:
+
+    def __init__(self, polygons, distance, boundaries=0):
+        self.polygons = polygons
+        self.distance = distance
+        self.boundaries = 0
+
+
+    # create a list of Spirals from the polygons
+    def generate(self):
+
+        spirals = []
+
+        for polygon in self.polygons:
+            
+            # get the isocontours
+            contours = distance_transform_diff(polygon, self.distance)
+            contours = self._flatten(contours)
+            
+            # initialize a spiral for each set of contours
+            for c in contours:
+                spirals.append(Spiral(c, self.distance))
+
+        return spirals
+
+    # flatten the output of distance_transform
+    def _flatten(self, contours):
+        
+        format_list = []
+        temp = []
+            
+        for c in contours:
+            if type(c) is list:
+                format_list.extend(self._flatten(c))
+            else:
+                temp.append(c)
+        
+        format_list.append(temp)       
+        
+        return format_list
+
+
+
+'''
+Find the endpoint guarenteed ~ avoids finding the wrong point in calculate point
+'''
+def calculate_endpoint(contour, radius):
+    
+    # reverse the contour coords to loop backwards through them
+    points = contour.coords[::-1]
+
+    start = Point(points[0])
+
+    # find the first distance past the position (all previous will be before the position)
+    for i, p in enumerate(points):
+        
+        dis = start.distance(Point(p))
+
+        if dis > radius:
+            index = i
+            break
+    else:
+        return None
+
+    # set the index correctly to match reverse
+    i1 = index
+    i0 = (index-1)
+
+    # we know the intersection must be on this line, and there can only be one
+    distance_ring = start.buffer(radius).exterior
+    line = LineString(points[i0:i1+1])
+
+    # the return of this must be a point
+    point = distance_ring.intersection(line)
+        
+    return point
+
+
 '''
 Calculate a point a distance away from a position on the contour in a given direction
 this is where the contour is rerouted to the next spiral
@@ -51,47 +184,6 @@ def calculate_point(contour, position, radius, forward = True):
         
     return point
 
-'''
-Find the endpoint guarenteed ~ avoids finding the wrong point in calculate point
-'''
-def calculate_endpoint(contour, radius, forward = False):
-    
-    # set the direction of the error
-    direction = 1 if forward else -1
-    
-    index = -1
-
-    # reverse the contour coords to loop backwards through them
-    points = contour.coords[::-1]
-
-    start = Point(points[0])
-
-    # find the first distance past the position (all previous will be before the position)
-    for i, p in enumerate(points):
-        
-        dis = start.distance(Point(p))
-
-        if dis > radius:
-            index = i
-            break
-    
-    # if no point was valid, then we return "None"
-    if index == -1:
-        return None
-
-    # set the index correctly to match reverse
-    i1 = index
-    i0 = (index-1)
-
-
-    # we know the intersection must be on this line, and there can only be one
-    distance_ring = start.buffer(radius).exterior
-    line = LineString(points[i0:i1+1])
-
-    # the return of this must be a point
-    point = distance_ring.intersection(line)
-        
-    return point
 
 '''
 Calculate a point a distance away from a position on the contour in a given direction
@@ -156,9 +248,7 @@ Pick a good start point for spiral generation
 This should be a point that...
  - has a large angle difference
  - has a long flat line
-
 '''
-
 def generate_start_point(contour, index):
 
     # find the longest line segment in contour
@@ -180,61 +270,6 @@ def generate_start_point(contour, index):
     # cycle the contour and return
     return cycle(contour, p0)
 
-
-'''
-Generate a spiral path from an input family of contours
-'''
-def spiral_path(contour_family, distance, start_index=0):
-
-    points = []
-
-    if not contour_family:
-        return points
-    
-    # set the start contour
-    contour = contour_family[0]
-    
-    # set the starting point as start_index (arbitrary)
-    # contour = LineString(list(contour.coords)[start_index:] + list(contour.coords)[:start_index])
-    contour = generate_start_point(contour, start_index)
-
-    # calculate the end point a distance away from the end of the contour
-    end = calculate_endpoint(contour, distance)
-
-    # if the end point was not found, return an empty list ~ contour is too small
-    if end is None:
-        return []
-    
-    # add the points before the reroute point to the path
-    ls, _ = cut(contour, contour.project(end))                
-    points.extend(ls.coords)
-    
-    # the previous contour is used to force the point away from acute angles
-    previous = contour
-    
-    # loop through each "inner" contour
-    for contour in contour_family[1:]:
-
-        # get the next start point
-        start = contour.interpolate(contour.project(end))
-                
-        # cycle so the start point is the coordinate at index 0
-        contour = cycle(contour, start)
-                
-        # calculate the end point a distance away from the previous contour
-        end = calculate_point_contour(contour, previous, distance)
-                
-        if end is None:
-            break
-
-        # add the points before the reroute point to the path
-        ls, _ = cut(contour, contour.project(end))                
-        points.extend(ls.coords)
-        
-        # set the previous to the processed contour so the next spiral generation can measure the distance from this
-        previous = contour
-        
-    return points
 
 '''
 Resolve self intersections in the linestring
@@ -295,79 +330,3 @@ def remove_intersections(path):
     path = list(reverse(rls).coords)   
 
     return path
-
-
-'''
-Create a cleaned spiral path with no duplicate points or self intersections
-'''
-def generate_path(contour_family, distance, start_index=0):
-
-    # run the path algorithm until the path exterior is correct
-    i = start_index
-    done = False
-
-    outer_ring = contour_family[0]
-
-    while not done:
-
-        # generate the spiral path
-        path = spiral_path(contour_family, distance, i)
-
-        if path:
-
-             # remove any duplicate points in the path
-            path = list(dict.fromkeys(path))
-
-            start_length = LineString(path)
-
-            # remove any self intersections in the path
-            # path = remove_intersections(path)
-
-            done = LineString(path).is_simple
-            i += 1
-
-        else:
-            done = True
-
-    return path
-
-
-'''
-Create a cleaned spiral path with no duplicate points or self intersections
-'''
-def generate_total_path(isocontours, distance):
-    total_path = []
-    contour_family = []
-    
-    # loop through each value in the result
-    for branch in isocontours:
-        if type(branch) is list:  
-            total_path.extend(generate_total_path(branch, distance))
-        else:
-            contour_family.append(branch)
-
-        path = generate_path(contour_family, distance)
-    
-    total_path.append(path)
-
-    return total_path
-
-
-
-'''
-Generate the spiral fill
-'''
-def execute(polygons, distance, boundaries=0):
-
-    total_path = []
-
-    for polygon in polygons:
-        isocontours = [polygon.exterior] + distance_transform_diff(polygon, distance) 
-
-        if isocontours:
-
-            path = generate_total_path(isocontours[boundaries:], distance)
-
-            total_path.extend(path)
-
-    return total_path

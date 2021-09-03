@@ -67,6 +67,7 @@ def distance_transform_diff(polygon, distance):
     
     return result
 
+
 '''
 Plot all of the contours of an input polygon
 '''
