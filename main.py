@@ -27,8 +27,8 @@ from matplotlib import pyplot
 import os
 
 # import utility functions
-from shapely_conversion import convert
-from shapely_utilities import *
+from src.utilities.shapely_conversion import convert
+from src.utilities.shapely_utilities import *
 
 # import spiral generation
 import patterns.spirals as S

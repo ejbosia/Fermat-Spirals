@@ -4,7 +4,7 @@ Generate a space-filling spiral path on an input polygon
 @author ejbosia
 '''
 
-from ..shapely_utilities import distance_transform_diff, cut, cycle, self_intersections_binary, reverse
+from ..utilities.shapely_utilities import distance_transform_diff, cut, cycle, self_intersections_binary, reverse
 
 from shapely.geometry import Point, LineString, Polygon
 

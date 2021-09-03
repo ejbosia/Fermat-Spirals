@@ -4,7 +4,6 @@ Utility functions to use with Shapely geometry objects
 @author ejbosia
 '''
 
-
 from shapely.geometry import Point
 from shapely.geometry import Polygon
 from shapely.geometry import LineString

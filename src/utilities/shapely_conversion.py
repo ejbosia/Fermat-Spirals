@@ -7,7 +7,7 @@ Convert input binary images into shapely polygons
 import cv2
 
 from shapely.geometry import Polygon
-from optimization import optimize_polygon
+# from optimization import optimize_polygon
 
 '''
 Convert an input binary image into a formatted list of contours with heirarch information
@@ -93,8 +93,8 @@ def convert(image, approximation = cv2.CHAIN_APPROX_SIMPLE, optimize=False, simp
 
     polygons = create_contour_families(contour_list)
 
-    if optimize:
-        polygons = [optimize_polygon(polygon) for polygon in polygons]
+    # if optimize:
+    #     polygons = [optimize_polygon(polygon) for polygon in polygons]
     
     if simplify > 0:
         polygons = [polygon.simplify(simplify) for polygon in polygons]
