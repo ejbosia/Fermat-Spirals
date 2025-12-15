@@ -1,3 +1,5 @@
+> ⚠️ **The updated version of this project can be found here: https://github.com/ejbosia/connected-fermat-spirals**
+
 # Fermat-Spirals
 Connected Fermat Spirals are a space filling curve that could be used for additive manufacturing. The algorithm is presented in this paper: https://dl.acm.org/doi/10.1145/2897824.2925958.
 
